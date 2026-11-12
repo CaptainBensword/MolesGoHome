@@ -1,116 +1,382 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Moles Go Home — First Light</title>
-  <style>
-    :root{color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,sans-serif}
-    *{box-sizing:border-box}
-    body{margin:0;overflow:hidden;background:#101b19;color:#f3f0df}
-    canvas{display:block}
-    #hud{position:fixed;inset:0;pointer-events:none}
-    .brand{position:absolute;left:25px;top:22px;text-shadow:0 2px 12px #000}
-    .brand b{display:block;font-size:18px;letter-spacing:.18em}
-    .brand span{font-size:10px;letter-spacing:.24em;color:#c5c6a9}
-    .panel{position:absolute;left:24px;bottom:24px;width:220px;padding:14px 16px;background:#101a18d9;border:1px solid #a9a27a55;border-radius:10px;box-shadow:0 10px 30px #0005}
-    .statline{display:flex;justify-content:space-between;font-size:11px;color:#d7d5c4;margin-bottom:7px}
-    .bar{height:7px;background:#3a3430;border-radius:9px;overflow:hidden;margin-bottom:11px}
-    .fill{height:100%;width:100%;background:linear-gradient(90deg,#a63c36,#df7654)}
-    .xp{background:linear-gradient(90deg,#b28a42,#e8d28a);width:12%}
-    .help{position:absolute;right:24px;bottom:24px;padding:13px 16px;background:#101a18d9;border:1px solid #a9a27a55;border-radius:10px;color:#d5d2bd;font-size:11px;line-height:1.8;text-align:right}
-    kbd{padding:2px 5px;border:1px solid #77745e;border-radius:4px;color:#fff}
-    #notice{position:absolute;top:23px;left:50%;transform:translateX(-50%);padding:9px 14px;border-radius:20px;background:#101a18b8;border:1px solid #b9a66a55;color:#e8dfbd;font-size:11px;letter-spacing:.08em;white-space:nowrap}
-    #crosshair{position:absolute;left:50%;top:50%;width:5px;height:5px;border:1px solid #fff9;border-radius:50%;transform:translate(-50%,-50%);opacity:.65}
-    @media(max-width:650px){.help{display:none}.panel{left:12px;bottom:12px}.brand{left:14px;top:14px}#notice{top:72px}}
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#111713">
+<title>Moles Go Home — A Talon Game</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
+:root{--gold:#e8c987;--gold2:#a9824a;--red:#a83d35;--ink:#111713;--panel:rgba(14,20,17,.91);--muted:#b8b5a6}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#151d19;color:#f5f0e4;font-family:Inter,system-ui,sans-serif}
+#world{position:fixed;inset:0;z-index:0;display:block}
+#shade{position:fixed;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,rgba(7,12,10,.82) 0%,rgba(7,12,10,.49) 38%,rgba(7,12,10,.04) 76%),linear-gradient(0deg,rgba(5,9,7,.48),transparent 38%,rgba(5,9,7,.18))}
+#menu{position:fixed;inset:0;z-index:3;display:flex;align-items:center;padding:5.5vw 7vw;transition:opacity .8s,transform .8s}
+#menu.leaving{opacity:0;transform:scale(1.035);pointer-events:none}
+.menu-copy{width:min(660px,65vw);padding-top:3vh}
+.eyebrow{display:flex;align-items:center;gap:13px;color:var(--gold);font-size:10px;font-weight:700;letter-spacing:.34em;text-transform:uppercase}
+.eyebrow:before{content:"";width:42px;height:1px;background:var(--gold2)}
+h1{font-family:Cinzel,Georgia,serif;font-size:clamp(48px,7.4vw,104px);line-height:.98;letter-spacing:.035em;margin:24px 0 14px;font-weight:600;text-shadow:0 5px 35px #0009}
+h1 span{display:block;color:var(--gold);font-size:.56em;letter-spacing:.32em;margin-top:15px}
+.subtitle{max-width:440px;color:#ded9c9;font-size:14px;line-height:1.8;margin:25px 0 34px;text-shadow:0 2px 10px #000}
+.actions{display:flex;flex-direction:column;align-items:flex-start;gap:11px}
+.action{min-width:228px;display:flex;align-items:center;gap:15px;border:0;background:transparent;color:#e7e0d0;text-transform:uppercase;letter-spacing:.16em;font-size:11px;font-weight:700;padding:11px 12px;cursor:pointer;text-align:left;transition:.2s}
+.action .mark{width:25px;color:var(--gold);font-size:15px;text-align:center}
+.action:hover{color:#fff;transform:translateX(7px)}
+.action.primary{min-width:260px;padding:17px 20px;border:1px solid rgba(232,201,135,.85);background:linear-gradient(110deg,rgba(128,73,42,.84),rgba(56,48,34,.78));box-shadow:0 9px 32px #0005;color:#fff7e8}
+.action.primary:hover{background:linear-gradient(110deg,#a65d37,#695033);box-shadow:0 0 28px #d6a76545}
+.action.primary .mark{font-size:18px}
+.corner{position:absolute;right:4.5vw;top:4vh;text-align:right;color:#e6ddc9;text-shadow:0 2px 10px #000}
+.talon-mark{font-family:Cinzel,Georgia,serif;font-weight:700;font-size:18px;letter-spacing:.35em;color:var(--gold)}
+.corner small{display:block;font-size:9px;letter-spacing:.28em;color:#c8c2b2;margin-top:7px}
+.menu-bottom{position:absolute;bottom:4vh;left:7vw;right:7vw;display:flex;justify-content:space-between;align-items:end;color:#d2c9b4;font-size:9px;letter-spacing:.22em;text-transform:uppercase}
+.menu-bottom span:last-child{color:#b7a782}
+#drawer{position:fixed;z-index:8;top:0;right:0;height:100%;width:min(470px,100%);padding:6vh 42px;background:linear-gradient(145deg,rgba(24,31,26,.98),rgba(10,15,13,.98));border-left:1px solid #d1b47855;box-shadow:-25px 0 80px #0008;transform:translateX(105%);transition:transform .55s cubic-bezier(.2,.8,.2,1);overflow-y:auto}
+#drawer.open{transform:translateX(0)}
+.drawer-top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #a88c5b55;padding-bottom:20px;margin-bottom:30px}
+.drawer-top h2{font:600 26px Cinzel,Georgia,serif;letter-spacing:.12em;margin:0;color:var(--gold)}
+.close{background:none;border:1px solid #a88c5b88;color:#e9dec8;width:36px;height:36px;font-size:20px;cursor:pointer}
+.setting{margin:25px 0}
+.setting label{display:flex;justify-content:space-between;gap:12px;color:#eee5d4;font-size:12px;letter-spacing:.08em;margin-bottom:12px}
+.setting small{display:block;color:#aaa796;font-size:11px;line-height:1.6;margin-top:8px}
+select{width:100%;background:#1a241e;border:1px solid #a88c5b77;color:#f4ead7;padding:13px;font:inherit}
+input[type=range]{width:100%;accent-color:#c79b5c}
+.setting output{color:var(--gold);font-variant-numeric:tabular-nums}
+.drawer-note{color:#bcb6a7;font-size:12px;line-height:1.8;margin:24px 0}
+.keyline{display:flex;justify-content:space-between;gap:20px;padding:13px 0;border-bottom:1px solid #ffffff13;color:#e6dfd0;font-size:12px}
+.keyline span:last-child{color:var(--gold);font-weight:700;letter-spacing:.08em}
+.credit-logo{font:700 42px Cinzel,Georgia,serif;letter-spacing:.28em;color:var(--gold);margin:25px 0 6px}
+.credit-sub{font-size:9px;letter-spacing:.35em;color:#c3b89e}
+.credit-rule{height:1px;background:linear-gradient(90deg,var(--gold2),transparent);margin:28px 0}
+.credit-role{font-size:9px;color:#a89f8c;letter-spacing:.24em;text-transform:uppercase;margin-top:24px}
+.credit-name{font:600 19px Cinzel,Georgia,serif;color:#f1e7d2;margin-top:8px}
+#loading{position:fixed;z-index:10;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;background:radial-gradient(ellipse at 52% 43%,rgba(76,76,49,.28),transparent 48%),#101713}
+#loading.show{display:flex}
+.load-kicker{font-size:9px;letter-spacing:.42em;color:var(--gold);text-transform:uppercase}
+.load-title{font:600 clamp(34px,5vw,58px) Cinzel,Georgia,serif;letter-spacing:.12em;margin:19px 0 9px}
+.load-text{font-size:11px;color:#bdb9aa;letter-spacing:.12em}
+.load-track{width:min(360px,75vw);height:2px;background:#4b4a3d;margin-top:35px;overflow:hidden}
+#loadbar{height:100%;width:0;background:linear-gradient(90deg,#927045,#f2d69b);transition:width .22s}
+#loadpercent{font-size:10px;color:#d7c49e;letter-spacing:.2em;margin-top:12px}
+#pause{position:fixed;z-index:6;inset:0;display:none;align-items:center;justify-content:center;background:rgba(5,9,7,.55);backdrop-filter:blur(7px)}
+#pause.show{display:flex}
+.pause-card{width:min(440px,90vw);padding:44px 42px;background:linear-gradient(145deg,rgba(24,31,26,.97),rgba(10,15,13,.97));border:1px solid #c5a46b77;box-shadow:0 30px 90px #0009;text-align:center}
+.pause-card h2{font:600 34px Cinzel,Georgia,serif;color:var(--gold);letter-spacing:.1em;margin:0 0 12px}
+.pause-card p{font-size:12px;line-height:1.7;color:#c7c1b2;margin:0 0 24px}
+.pause-actions{display:flex;flex-direction:column;align-items:center;gap:8px}
+.pause-actions .action{justify-content:center}
+.pause-actions .action.primary{justify-content:center}
+#gamehud{display:none;position:fixed;z-index:2;inset:0;pointer-events:none}
+#crosshair{position:absolute;left:50%;top:50%;width:7px;height:7px;border:1px solid #fff9;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 8px #000}
+#world-label{position:absolute;top:30px;left:34px;color:#eee6d5;text-shadow:0 2px 12px #000}
+#world-label b{font:600 16px Cinzel,Georgia,serif;letter-spacing:.18em}
+#world-label small{display:block;margin-top:7px;font-size:9px;letter-spacing:.25em;color:#d3b77e}
+#game-hint{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);padding:10px 16px;border:1px solid #bca06a55;background:#111913b8;color:#e3dac7;font-size:10px;letter-spacing:.08em;white-space:nowrap}
+#game-state{position:absolute;bottom:24px;right:28px;color:#ded5c1;text-align:right;font-size:9px;letter-spacing:.15em;text-shadow:0 2px 8px #000}
+#fade{position:fixed;z-index:9;inset:0;background:#080c0a;opacity:0;pointer-events:none;transition:opacity .65s}
+#fade.on{opacity:1}
+#toast{position:fixed;z-index:4;top:22px;left:50%;transform:translateX(-50%);padding:10px 16px;background:#101713d9;border:1px solid #b99a6355;color:#e7d9bd;font-size:10px;letter-spacing:.1em;opacity:0;transition:opacity .25s;pointer-events:none}
+#toast.show{opacity:1}
+@media(max-width:700px){
+ #menu{padding:9vw 8vw;align-items:flex-end;padding-bottom:13vh}
+ .menu-copy{width:100%;padding:0}
+ h1{font-size:clamp(43px,13vw,72px);margin:14px 0}
+ .subtitle{font-size:12px;margin:15px 0 20px;max-width:360px}
+ .corner{top:3vh;right:7vw}
+ .menu-bottom{left:8vw;right:8vw;bottom:3vh;font-size:7px}
+ .menu-bottom span:last-child{display:none}
+ #drawer{padding:5vh 26px}
+ #world-label{left:16px;top:18px}
+}
+</style>
 </head>
 <body>
-<div id="hud">
-  <div class="brand"><b>MOLES GO HOME</b><span>THE FIRST FRONTIER</span></div>
-  <div id="notice">A new world is waiting. Explore.</div>
-  <div id="crosshair"></div>
-  <div class="panel">
-    <div class="statline"><span>VITALITY</span><span id="healthText">100 / 100</span></div>
-    <div class="bar"><div class="fill" id="healthFill"></div></div>
-    <div class="statline"><span>EXPERIENCE</span><span>LEVEL 1</span></div>
-    <div class="bar"><div class="fill xp"></div></div>
-    <div class="statline"><span>WANDERER</span><span>LV. 1</span></div>
+<div id="shade"></div>
+<div id="menu">
+ <div class="corner"><div class="talon-mark">TALON</div><small>AN INDEPENDENT GAME</small></div>
+ <div class="menu-copy">
+  <div class="eyebrow">A new adventure begins</div>
+  <h1>MOLES<br>GO HOME<span>THE FIRST FRONTIER</span></h1>
+  <p class="subtitle">Beyond the ridge, an untamed world waits. Find your footing. Follow the old paths. Make the frontier yours.</p>
+  <div class="actions">
+   <button class="action primary" id="play"><span class="mark">▶</span> Begin journey</button>
+   <button class="action" id="settings"><span class="mark">⚙</span> Settings</button>
+   <button class="action" id="controls"><span class="mark">⌘</span> Controls</button>
+   <button class="action" id="credits"><span class="mark">✦</span> Credits</button>
   </div>
-  <div class="help"><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> Move<br><kbd>SPACE</kbd> Jump<br>Mouse Move camera<br><kbd>CLICK</kbd> Attack</div>
+ </div>
+ <div class="menu-bottom"><span>Explore · Discover · Become</span><span>Version 0.2 · A Talon project</span></div>
 </div>
+<aside id="drawer">
+ <div class="drawer-top"><h2 id="drawer-title">Settings</h2><button class="close" id="drawer-close" aria-label="Close">×</button></div>
+ <div id="drawer-content"></div>
+</aside>
+<div id="loading">
+ <div class="load-kicker">Talon presents</div><div class="load-title">THE FRONTIER</div>
+ <div class="load-text" id="loadtext">Preparing the world...</div>
+ <div class="load-track"><div id="loadbar"></div></div><div id="loadpercent">0%</div>
+</div>
+<div id="pause">
+ <div class="pause-card">
+  <h2 id="pause-title">THE RIDGELINE</h2>
+  <p id="pause-copy">The wind moves through the grass. The world is yours to explore.</p>
+  <div class="pause-actions">
+   <button class="action primary" id="resume"><span class="mark">▶</span><span id="resume-label">Enter the world</span></button>
+   <button class="action" id="pause-settings"><span class="mark">⚙</span> Settings</button>
+   <button class="action" id="leave"><span class="mark">↩</span> Return to title</button>
+  </div>
+ </div>
+</div>
+<div id="gamehud"><div id="world-label"><b>THE FIRST FRONTIER</b><small>THE RIDGELINE</small></div><div id="crosshair"></div><div id="game-hint">CLICK TO LOOK AROUND &nbsp;·&nbsp; WASD TO MOVE &nbsp;·&nbsp; ESC TO PAUSE</div><div id="game-state">FIRST LIGHT<br>NO PATH IS SET</div></div>
+<div id="toast"></div><div id="fade"></div>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js';
 
+const $=id=>document.getElementById(id);
 const scene=new THREE.Scene();
-scene.background=new THREE.Color(0x9bb7b0);
-scene.fog=new THREE.FogExp2(0x9bb7b0,0.009);
-const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,500);
-const renderer=new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;
-document.body.appendChild(renderer.domElement);
+scene.background=new THREE.Color(0x91a9a1);
+scene.fog=new THREE.FogExp2(0x91a9a1,.0030);
+const camera=new THREE.PerspectiveCamera(76,innerWidth/innerHeight,.1,650);
+camera.rotation.order='YXZ';
+const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));
+renderer.setSize(innerWidth,innerHeight);
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.12;
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.domElement.id='world';
+document.body.prepend(renderer.domElement);
 
-scene.add(new THREE.HemisphereLight(0xdcebe4,0x536047,2.0));
-const sun=new THREE.DirectionalLight(0xffedcf,2.5);sun.position.set(-35,55,25);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-65;sun.shadow.camera.right=65;sun.shadow.camera.top=65;sun.shadow.camera.bottom=-65;scene.add(sun);
-
-const mat=(color,roughness=1)=>new THREE.MeshStandardMaterial({color,roughness});
-const groundMat=mat(0x71865a);
-const ground=new THREE.Mesh(new THREE.PlaneGeometry(260,260),groundMat);ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
-
-// Soft patches give the meadow some natural variation without noisy textures.
-for(let i=0;i<180;i++){
- const patch=new THREE.Mesh(new THREE.CircleGeometry(THREE.MathUtils.randFloat(1.2,5),12),mat([0x7e905e,0x657b50,0x899365,0x718158][i%4]));
- patch.rotation.x=-Math.PI/2;patch.position.set(THREE.MathUtils.randFloatSpread(230),.012,THREE.MathUtils.randFloatSpread(230));patch.scale.y=THREE.MathUtils.randFloat(.5,1.5);scene.add(patch);
+const hemi=new THREE.HemisphereLight(0xdde9df,0x53604a,1.65);scene.add(hemi);
+const sun=new THREE.DirectionalLight(0xffdfb1,3.1);
+sun.position.set(-75,105,55);sun.castShadow=true;
+sun.shadow.mapSize.set(1536,1536);
+sun.shadow.camera.left=-100;sun.shadow.camera.right=100;sun.shadow.camera.top=100;sun.shadow.camera.bottom=-100;
+sun.shadow.bias=-.00018;scene.add(sun);
+const fill=new THREE.DirectionalLight(0xb2c7d1,.55);fill.position.set(55,35,-80);scene.add(fill);
+const standard=(color,roughness=1,metalness=0)=>new THREE.MeshStandardMaterial({color,roughness,metalness});
+const groundMat=new THREE.MeshStandardMaterial({vertexColors:true,roughness:1});
+function heightAt(x,z){
+ const hill=10.8*Math.exp(-((x*x)/(2*34*34)+(Math.pow(z-17,2))/(2*30*30)));
+ const farHill=5.5*Math.exp(-((Math.pow(x+62,2))/(2*36*36)+(Math.pow(z+64,2))/(2*32*32)));
+ const rightHill=6.2*Math.exp(-((Math.pow(x-78,2))/(2*43*43)+(Math.pow(z+35,2))/(2*38*38)));
+ const low=2.2*Math.sin(x*.018+z*.012)+1.4*Math.cos(z*.026-x*.011)+.8*Math.sin((x+z)*.048);
+ const valley=-2.6*Math.exp(-(x*x)/(2*17*17))*Math.exp(-Math.pow(z+38,2)/(2*48*48));
+ return hill+farHill+rightHill+low+valley;
 }
-const trunkMat=mat(0x594638),leafMats=[mat(0x385b43),mat(0x496c4c),mat(0x58764c)];
-function tree(x,z,s=1){
- const g=new THREE.Group();g.position.set(x,0,z);g.scale.setScalar(s);
- const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.22,.34,2.5,7),trunkMat);trunk.position.y=1.25;trunk.castShadow=true;g.add(trunk);
- for(let j=0;j<3;j++){const crown=new THREE.Mesh(new THREE.ConeGeometry(1.45-j*.2,2.5,7),leafMats[(j+Math.floor(x+z))%3]);crown.position.set(0,2.7+j*.72,0);crown.castShadow=true;g.add(crown);}
- scene.add(g);
+const terrainGeo=new THREE.PlaneGeometry(360,360,190,190);
+const pos=terrainGeo.attributes.position;
+const colors=[];
+for(let i=0;i<pos.count;i++){
+ const x=pos.getX(i),z=-pos.getY(i),h=heightAt(x,z);
+ pos.setZ(i,h);
+ const shade=THREE.MathUtils.clamp((h+3)/20,0,1);
+ const c=new THREE.Color().setRGB(.30+shade*.075,.38+shade*.065,.235+shade*.035);
+ colors.push(c.r,c.g,c.b);
 }
-for(let i=0;i<95;i++){let x=THREE.MathUtils.randFloatSpread(150),z=THREE.MathUtils.randFloatSpread(150);if(Math.hypot(x,z)>13)tree(x,z,THREE.MathUtils.randFloat(.75,1.45));}
-const rockMat=mat(0x777b70);
-for(let i=0;i<45;i++){const r=new THREE.Mesh(new THREE.DodecahedronGeometry(THREE.MathUtils.randFloat(.35,1.3),0),rockMat);r.position.set(THREE.MathUtils.randFloatSpread(120),.35,THREE.MathUtils.randFloatSpread(120));r.scale.y=.65;r.castShadow=true;r.receiveShadow=true;scene.add(r);}
+terrainGeo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
+terrainGeo.rotateX(-Math.PI/2);terrainGeo.computeVertexNormals();
+const terrain=new THREE.Mesh(terrainGeo,groundMat);terrain.receiveShadow=true;scene.add(terrain);
 
-// Player: a readable placeholder adventurer built from real 3D meshes.
-const player=new THREE.Group();scene.add(player);
-const skin=mat(0xd6ad85),cloth=mat(0x344c58),leather=mat(0x49372c),metal=mat(0xb6b9b1,.45);
-const body=new THREE.Mesh(new THREE.CapsuleGeometry(.42,.85,5,8),cloth);body.position.y=1.12;body.castShadow=true;player.add(body);
-const head=new THREE.Mesh(new THREE.SphereGeometry(.29,16,12),skin);head.position.y=1.92;head.castShadow=true;player.add(head);
-const hair=new THREE.Mesh(new THREE.SphereGeometry(.3,12,8,0,Math.PI*2,0,Math.PI*.55),leather);hair.position.y=2.02;player.add(hair);
-const sword=new THREE.Group();const blade=new THREE.Mesh(new THREE.BoxGeometry(.09,.9,.045),metal);blade.position.y=.55;sword.add(blade);const hilt=new THREE.Mesh(new THREE.BoxGeometry(.32,.08,.1),leather);hilt.position.y=.12;sword.add(hilt);sword.position.set(.48,1.05,0);sword.rotation.z=-.3;player.add(sword);
-
-const enemyMat=mat(0x68734a),enemyDark=mat(0x343a2b);
-const enemies=[];
-for(const [x,z] of [[7,-9],[-10,-15],[14,12],[-18,8],[4,22]]){
- const e=new THREE.Group();const torso=new THREE.Mesh(new THREE.SphereGeometry(.7,12,10),enemyMat);torso.position.y=.75;torso.scale.y=1.1;torso.castShadow=true;e.add(torso);
- const headE=new THREE.Mesh(new THREE.SphereGeometry(.4,12,10),enemyDark);headE.position.set(0,1.55,.12);e.add(headE);e.position.set(x,0,z);scene.add(e);enemies.push({mesh:e,hp:3,alive:true});
+const pathMat=standard(0x897b5b);
+const pathPoints=[];
+for(let i=0;i<=90;i++){const t=i/90,z=8-t*148,x=Math.sin(t*4.2)*4.5-1.5;pathPoints.push(new THREE.Vector3(x,heightAt(x,z)+.055,z));}
+const pathVerts=[],pathIndices=[];
+for(let i=0;i<pathPoints.length;i++){
+ const p=pathPoints[i],prev=pathPoints[Math.max(0,i-1)],next=pathPoints[Math.min(pathPoints.length-1,i+1)];
+ const tangent=new THREE.Vector3().subVectors(next,prev).normalize();
+ const side=new THREE.Vector3(-tangent.z,0,tangent.x).normalize();
+ pathVerts.push(p.x+side.x*2.6,p.y+.015,p.z+side.z*2.6,p.x-side.x*2.6,p.y+.015,p.z-side.z*2.6);
+ if(i<pathPoints.length-1){const a=i*2;pathIndices.push(a,a+1,a+2,a+1,a+3,a+2);}
 }
-const keys={};addEventListener('keydown',e=>{keys[e.code]=true;if(e.code==='Space')e.preventDefault();});addEventListener('keyup',e=>keys[e.code]=false);
-let yaw=0,pitch=.28,drag=false,lastX=0,lastY=0,health=100;
-renderer.domElement.addEventListener('pointerdown',e=>{if(e.button===2){drag=true;lastX=e.clientX;lastY=e.clientY;}else if(e.button===0)attack();});
-addEventListener('pointerup',()=>drag=false);addEventListener('pointermove',e=>{if(drag){yaw-=(e.clientX-lastX)*.006;pitch=THREE.MathUtils.clamp(pitch+(e.clientY-lastY)*.004,-.05,.8);lastX=e.clientX;lastY=e.clientY;}});
-renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
-function attack(){sword.rotation.z=-1.5;setTimeout(()=>sword.rotation.z=-.3,180);for(const e of enemies){if(!e.alive)continue;const d=player.position.distanceTo(e.mesh.position);if(d<3.3){e.hp--;e.mesh.position.add(new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw)).multiplyScalar(1.1));if(e.hp<=0){e.alive=false;scene.remove(e.mesh);document.getElementById('notice').textContent='Creature defeated — the frontier grows quieter.';}break;}}}
-let vy=0,onGround=true;const clock=new THREE.Clock();const forward=new THREE.Vector3(),right=new THREE.Vector3(),move=new THREE.Vector3();
-camera.position.set(0,5,8);
+const pg=new THREE.BufferGeometry();pg.setAttribute('position',new THREE.Float32BufferAttribute(pathVerts,3));pg.setIndex(pathIndices);pg.computeVertexNormals();
+const path=new THREE.Mesh(pg,new THREE.MeshStandardMaterial({color:0x928365,roughness:1,side:THREE.DoubleSide}));path.receiveShadow=true;scene.add(path);
+
+// A distant warm sun gives the menu and hilltop a clear focal point.
+const sunDisc=new THREE.Mesh(new THREE.SphereGeometry(7,24,16),new THREE.MeshBasicMaterial({color:0xffd79b}));sunDisc.position.set(-95,82,-205);scene.add(sunDisc);
+const glow=new THREE.PointLight(0xffc77e,95,270,2);glow.position.copy(sunDisc.position);scene.add(glow);
+
+// Low-poly forest: instancing keeps the scene light enough for a browser.
+const trunkMat=standard(0x514233),leafMats=[standard(0x294b3d),standard(0x365a43),standard(0x49664a)];
+const trunkGeo=new THREE.CylinderGeometry(.2,.31,2.8,7);
+const crownGeos=[new THREE.ConeGeometry(2.15,3.3,7),new THREE.ConeGeometry(1.72,3.0,7),new THREE.ConeGeometry(1.23,2.5,7)];
+const treeData=[];
+for(let i=0;i<330;i++){
+ const x=(rand(i*4+1)-.5)*270,z=(rand(i*4+2)-.5)*270;
+ if(Math.hypot(x,z-17)<29)continue;
+ const roadX=Math.sin(((8-z)/156)*4.2)*4.5-1.5;
+ if(z<12&&z>-150&&Math.abs(x-roadX)<7)continue;
+ const s=.68+rand(i*4+3)*.78;
+ treeData.push({x,z,s,y:heightAt(x,z)});
+}
+function rand(n){const v=Math.sin(n*127.1+311.7)*43758.5453;return v-Math.floor(v);}
+function instanced(geo,material,data,makeTransform){
+ const mesh=new THREE.InstancedMesh(geo,material,data.length);const dummy=new THREE.Object3D();
+ data.forEach((d,i)=>{makeTransform(dummy,d);dummy.updateMatrix();mesh.setMatrixAt(i,dummy.matrix);});
+ mesh.instanceMatrix.needsUpdate=true;mesh.castShadow=true;mesh.receiveShadow=true;scene.add(mesh);return mesh;
+}
+instanced(trunkGeo,trunkMat,treeData,(o,d)=>{o.position.set(d.x,d.y+1.4*d.s,d.z);o.scale.setScalar(d.s);o.rotation.y=rand(Math.round(d.x*13+d.z*7))*6.28;});
+crownGeos.forEach((geo,t)=>instanced(geo,leafMats[t],treeData,(o,d)=>{o.position.set(d.x,d.y+(2.55+t*.91)*d.s,d.z);o.scale.setScalar(d.s);o.rotation.y=rand(Math.round(d.x*5+d.z*11+t))*6.28;}));
+
+const rockGeo=new THREE.DodecahedronGeometry(1,0),rockMat=standard(0x77786b);
+const rocks=[];
+for(let i=0;i<155;i++){const x=(rand(i+800)-.5)*245,z=(rand(i+1100)-.5)*245;if(Math.hypot(x,z-17)<23)continue;const s=.45+rand(i+1400)*1.7;rocks.push({x,z,s,y:heightAt(x,z)});}
+instanced(rockGeo,rockMat,rocks,(o,d)=>{o.position.set(d.x,d.y+d.s*.34,d.z);o.scale.set(d.s,d.s*.68,d.s*.82);o.rotation.set(rand(d.x+33)*.5,rand(d.z+55)*6,rand(d.x+d.z)*.4);});
+
+// A weathered gateway on the far ridge, with a small ember-lit marker.
+const stone=standard(0x777566),darkStone=standard(0x4b5147),amber=standard(0xd6a85e,.4,.25);
+function block(x,y,z,sx,sy,sz,material,ry=0){
+ const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),material);m.position.set(x,y,z);m.rotation.y=ry;m.castShadow=true;m.receiveShadow=true;scene.add(m);return m;
+}
+const gx=4,gz=-105,gy=heightAt(gx,gz);
+block(gx-5,gy+4,gz,2.1,8,2.4,stone,-.08);block(gx+5,gy+4.8,gz,2.1,9.6,2.4,stone,.06);
+block(gx,gy+9.1,gz,12,2,2.5,stone,-.02);
+block(gx-5.2,gy+8.7,gz,2.4,1.2,3,darkStone);block(gx+5.2,gy+9.4,gz,2.4,1.2,3,darkStone);
+const marker=new THREE.Mesh(new THREE.OctahedronGeometry(1.1,0),amber);marker.position.set(gx,gy+6.6,gz);scene.add(marker);
+const markerLight=new THREE.PointLight(0xffbd69,4,24);markerLight.position.copy(marker.position);scene.add(markerLight);
+for(let i=0;i<7;i++){const px=gx-2.5+i*.8,pz=gz-3.5;const peb=new THREE.Mesh(new THREE.DodecahedronGeometry(.48,0),darkStone);peb.position.set(px,gy+.4+rand(i)*.6,pz);peb.rotation.set(i*.3,i*.7,.2);peb.castShadow=true;scene.add(peb);}
+
+// Camera-mounted grapple-spike silhouette: a visual placeholder for the game's signature tool.
+const weapon=new THREE.Group();
+const shaft=new THREE.Mesh(new THREE.CylinderGeometry(.035,.055,.82,8),standard(0x333b3b,.38,.72));shaft.position.y=-.04;weapon.add(shaft);
+const grip=new THREE.Mesh(new THREE.CylinderGeometry(.065,.065,.27,8),standard(0x713d30,.8));grip.position.y=-.27;weapon.add(grip);
+const spike=new THREE.Mesh(new THREE.ConeGeometry(.105,.42,7),standard(0xc4c5ad,.28,.78));spike.position.y=.57;weapon.add(spike);
+const collar=new THREE.Mesh(new THREE.TorusGeometry(.09,.025,6,12),standard(0xb88a4c,.35,.6));collar.rotation.x=Math.PI/2;collar.position.y=.32;weapon.add(collar);
+const core=new THREE.Mesh(new THREE.SphereGeometry(.045,10,8),new THREE.MeshBasicMaterial({color:0xb74d39}));core.position.set(0,.13,0);weapon.add(core);
+weapon.position.set(.58,-.53,-.88);weapon.rotation.set(.17,0,-.48);camera.add(weapon);scene.add(camera);
+
+// Game state and first-person movement.
+const player={x:0,z:17,y:heightAt(0,17),vy:0,grounded:true};
+let yaw=0,pitch=-.045,mode='menu',locked=false,moveSpeed=8;
+const keys={};
+const settings={quality:'high',sensitivity:1,fov:76};
+function applySettings(){
+ camera.fov=settings.fov;camera.updateProjectionMatrix();
+ const ratio=settings.quality==='low'?.85:settings.quality==='medium'?1.15:1.7;
+ renderer.setPixelRatio(Math.min(devicePixelRatio,ratio));
+ renderer.shadowMap.enabled=settings.quality!=='low';
+ renderer.shadowMap.needsUpdate=true;
+}
+function positionCamera(){camera.position.set(player.x,player.y+1.68,player.z);camera.rotation.set(pitch,yaw,0,'YXZ');}
+positionCamera();
+let toastTimer=0;
+function toast(message){$('toast').textContent=message;$('toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('show'),2400);}
+function showDrawer(title,html){$('drawer-title').textContent=title;$('drawer-content').innerHTML=html;$('drawer').classList.add('open');}
+function closeDrawer(){$('drawer').classList.remove('open');}
+function settingsMarkup(){
+ return '<div class="setting"><label for="quality">World detail <output id="quality-value">'+settings.quality.toUpperCase()+'</output></label><select id="quality"><option value="low">Low — smoother performance</option><option value="medium">Medium — balanced</option><option value="high">High — full detail</option></select><small>Changes shadow quality and rendering detail.</small></div>'+
+ '<div class="setting"><label for="fov">Field of view <output id="fov-value">'+settings.fov+'°</output></label><input id="fov" type="range" min="60" max="100" step="1" value="'+settings.fov+'"><small>A wider view shows more of the world.</small></div>'+
+ '<div class="setting"><label for="sensitivity">Mouse sensitivity <output id="sens-value">'+settings.sensitivity.toFixed(1)+'×</output></label><input id="sensitivity" type="range" min=".4" max="2.2" step=".1" value="'+settings.sensitivity+'"><small>Adjust how quickly the camera turns.</small></div>'+
+ '<p class="drawer-note">More options will arrive as the frontier grows. Your choices are saved in this browser.</p>';
+}
+function openSettings(){
+ showDrawer('Settings',settingsMarkup());
+ $('quality').value=settings.quality;
+ $('quality').addEventListener('change',e=>{settings.quality=e.target.value;$('quality-value').textContent=settings.quality.toUpperCase();applySettings();saveSettings();});
+ $('fov').addEventListener('input',e=>{settings.fov=Number(e.target.value);$('fov-value').textContent=settings.fov+'°';applySettings();saveSettings();});
+ $('sensitivity').addEventListener('input',e=>{settings.sensitivity=Number(e.target.value);$('sens-value').textContent=settings.sensitivity.toFixed(1)+'×';saveSettings();});
+}
+function saveSettings(){try{localStorage.setItem('mgh-settings',JSON.stringify(settings));}catch(e){}}
+try{const stored=JSON.parse(localStorage.getItem('mgh-settings')||'null');if(stored){if(['low','medium','high'].includes(stored.quality))settings.quality=stored.quality;if(stored.fov>=60&&stored.fov<=100)settings.fov=stored.fov;if(stored.sensitivity>=.4&&stored.sensitivity<=2.2)settings.sensitivity=stored.sensitivity;}}catch(e){}
+applySettings();
+function openControls(){showDrawer('Controls','<p class="drawer-note">The frontier is yours to cross. These are the current movement controls.</p>'+
+ '<div class="keyline"><span>Move</span><span>W A S D</span></div><div class="keyline"><span>Look around</span><span>MOUSE</span></div><div class="keyline"><span>Jump</span><span>SPACE</span></div><div class="keyline"><span>Sprint</span><span>SHIFT</span></div><div class="keyline"><span>Pause / release mouse</span><span>ESC</span></div><div class="keyline"><span>Capture mouse</span><span>CLICK</span></div>'+
+ '<p class="drawer-note">The grapple spike is part of the game's direction. Its traversal and combat abilities are still being built.</p>');}
+function openCredits(){showDrawer('The people behind it','<div class="credit-logo">TALON</div><div class="credit-sub">INDEPENDENT CREATIVE STUDIO</div><div class="credit-rule"></div><p class="drawer-note">A world made for curious explorers, stubborn adventurers, and anyone who has ever looked at a distant ridge and wondered what was beyond it.</p><div class="credit-role">Game and creative direction</div><div class="credit-name">Talon</div><div class="credit-role">A Talon original project</div><div class="credit-name">Moles Go Home</div><div class="credit-rule"></div><p class="drawer-note">Built one piece at a time. The frontier is only the beginning.</p>');}
+$('settings').onclick=openSettings;$('controls').onclick=openControls;$('credits').onclick=openCredits;
+$('drawer-close').onclick=closeDrawer;
+$('play').onclick=beginLoading;
+$('pause-settings').onclick=openSettings;
+$('resume').onclick=()=>{closeDrawer();$('pause').classList.remove('show');if(renderer.domElement.requestPointerLock)renderer.domElement.requestPointerLock();else toast('Use WASD to move and the mouse to look around.');};
+$('leave').onclick=()=>{
+ if(document.pointerLockElement)document.exitPointerLock();
+ mode='menu';$('pause').classList.remove('show');$('gamehud').style.display='none';$('menu').style.display='flex';$('shade').style.display='block';$('menu').classList.remove('leaving');camera.fov=settings.fov;positionCamera();closeDrawer();
+};
+let loadTimer=null;
+function beginLoading(){
+ mode='loading';$('menu').classList.add('leaving');$('shade').style.display='none';$('loading').classList.add('show');
+ const messages=['Preparing the frontier...','Waking the old stones...','Finding the ridgeline...','Almost there...'];
+ let p=0;$('loadbar').style.width='0%';$('loadpercent').textContent='0%';$('loadtext').textContent=messages[0];
+ clearInterval(loadTimer);
+ loadTimer=setInterval(()=>{
+  p=Math.min(100,p+Math.round(4+Math.random()*9));
+  $('loadbar').style.width=p+'%';$('loadpercent').textContent=p+'%';$('loadtext').textContent=messages[Math.min(3,Math.floor(p/27))];
+  if(p>=100){clearInterval(loadTimer);setTimeout(()=>{
+   $('loading').classList.remove('show');$('menu').style.display='none';$('shade').style.display='none';$('gamehud').style.display='block';
+   mode='game';positionCamera();$('pause-title').textContent='THE RIDGELINE';$('pause-copy').textContent='You stand above the First Frontier. A trail winds down into the valley, and something old waits beyond the trees.';$('resume-label').textContent='Enter the world';$('pause').classList.add('show');
+  },350);}
+ },145);
+}
+renderer.domElement.addEventListener('click',()=>{
+ if(mode==='game'&&!locked&&!$('pause').classList.contains('show')&&renderer.domElement.requestPointerLock)renderer.domElement.requestPointerLock();
+});
+document.addEventListener('pointerlockchange',()=>{
+ locked=document.pointerLockElement===renderer.domElement;
+ if(mode==='game'){
+  $('pause').classList.toggle('show',!locked);
+  $('game-hint').textContent=locked?'WASD MOVE  ·  SHIFT SPRINT  ·  SPACE JUMP  ·  ESC PAUSE':'CLICK TO LOOK AROUND  ·  WASD TO MOVE  ·  ESC TO PAUSE';
+ }
+});
+document.addEventListener('mousemove',e=>{
+ if(!locked||mode!=='game')return;
+ yaw-=e.movementX*.0022*settings.sensitivity;
+ pitch=THREE.MathUtils.clamp(pitch-e.movementY*.0018*settings.sensitivity,-1.25,1.25);
+ camera.rotation.set(pitch,yaw,0,'YXZ');
+});
+document.addEventListener('keydown',e=>{
+ keys[e.code]=true;
+ if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
+ if(e.code==='Escape'&&mode==='game'&&locked){/* Browser releases pointer lock; pause is shown by the event above. */}
+});
+document.addEventListener('keyup',e=>{keys[e.code]=false;});
+window.addEventListener('blur',()=>{for(const k in keys)keys[k]=false;});
+
+const clock=new THREE.Clock();
+const menuTarget=new THREE.Vector3(0,8,-47);
+const menuCamStart=new THREE.Vector3(20,21,51);
+function updateGame(dt){
+ if(mode!=='game'||!locked)return;
+ const dir=new THREE.Vector3(0,0,0);
+ const forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
+ const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
+ if(keys.KeyW||keys.ArrowUp)dir.add(forward);
+ if(keys.KeyS||keys.ArrowDown)dir.sub(forward);
+ if(keys.KeyD||keys.ArrowRight)dir.add(right);
+ if(keys.KeyA||keys.ArrowLeft)dir.sub(right);
+ const sprint=keys.ShiftLeft||keys.ShiftRight;
+ if(dir.lengthSq()>0){dir.normalize();const speed=moveSpeed*(sprint?1.55:1);player.x+=dir.x*speed*dt;player.z+=dir.z*speed*dt;}
+ player.x=THREE.MathUtils.clamp(player.x,-164,164);player.z=THREE.MathUtils.clamp(player.z,-164,164);
+ const floor=heightAt(player.x,player.z);
+ if(keys.Space&&player.grounded){player.vy=8.7;player.grounded=false;}
+ player.vy-=22*dt;player.y+=player.vy*dt;
+ if(player.y<=floor){player.y=floor;player.vy=0;player.grounded=true;}
+ positionCamera();
+ // The spike shifts slightly with movement to keep the view grounded.
+ weapon.position.y=-.53+(dir.lengthSq()>.01?Math.sin(clock.elapsedTime*10)*.018:0);
+ weapon.rotation.z=-.48+(dir.lengthSq()>.01?Math.sin(clock.elapsedTime*10)*.025:0);
+}
 function animate(){
- requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.04);
- forward.set(-Math.sin(yaw),0,-Math.cos(yaw));right.set(Math.cos(yaw),0,-Math.sin(yaw));move.set(0,0,0);
- if(keys.KeyW||keys.ArrowUp)move.add(forward);if(keys.KeyS||keys.ArrowDown)move.sub(forward);if(keys.KeyD||keys.ArrowRight)move.add(right);if(keys.KeyA||keys.ArrowLeft)move.sub(right);
- if(move.lengthSq()){move.normalize();player.position.addScaledVector(move,7*dt);player.rotation.y=Math.atan2(move.x,move.z);}
- if(keys.Space&&onGround){vy=8;onGround=false;}vy-=20*dt;player.position.y+=vy*dt;if(player.position.y<0){player.position.y=0;vy=0;onGround=true;}
- player.position.x=THREE.MathUtils.clamp(player.position.x,-115,115);player.position.z=THREE.MathUtils.clamp(player.position.z,-115,115);
- const target=new THREE.Vector3(player.position.x+Math.sin(yaw)*Math.cos(pitch)*8,player.position.y+3+Math.sin(pitch)*8,player.position.z+Math.cos(yaw)*Math.cos(pitch)*8);
- camera.position.lerp(target,1-Math.pow(.001,dt));camera.lookAt(player.position.x,player.position.y+1.1,player.position.z);
- enemies.forEach(e=>{if(e.alive)e.mesh.rotation.y+=dt*.35;});
+ requestAnimationFrame(animate);
+ const dt=Math.min(clock.getDelta(),.04);
+ if(mode==='menu'){
+  const t=clock.elapsedTime;
+  camera.position.set(menuCamStart.x+Math.sin(t*.12)*2.8,menuCamStart.y+Math.sin(t*.17)*.8,menuCamStart.z+Math.cos(t*.12)*2.8);
+  camera.lookAt(menuTarget);
+  weapon.visible=false;
+ }else if(mode==='game'){weapon.visible=true;updateGame(dt);}
+ else{weapon.visible=false;}
+ marker.rotation.y+=dt*.32;marker.rotation.x=Math.sin(clock.elapsedTime*.7)*.12;
  renderer.render(scene,camera);
 }
 animate();
-addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight);});
+addEventListener('resize',()=>{
+ camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();
+ renderer.setSize(innerWidth,innerHeight);
+ applySettings();
+});
 </script>
 </body>
 </html>
