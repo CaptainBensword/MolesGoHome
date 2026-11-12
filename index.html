@@ -96,17 +96,17 @@ input[type=range]{width:100%;accent-color:#c79b5c}
 <div id="menu">
  <div class="corner"><div class="talon-mark">TALON</div><small>AN INDEPENDENT GAME</small></div>
  <div class="menu-copy">
-  <div class="eyebrow">A new adventure begins</div>
+  <div class="eyebrow">FIRST-PERSON ACTION ADVENTURE</div>
   <h1>MOLES<br>GO HOME<span>THE FIRST FRONTIER</span></h1>
-  <p class="subtitle">Beyond the ridge, an untamed world waits. Find your footing. Follow the old paths. Make the frontier yours.</p>
+  <p class="subtitle">A trail leads down from the hill. An old stone gate stands beyond the trees.</p>
   <div class="actions">
-   <button class="action primary" id="play"><span class="mark">▶</span> Begin journey</button>
+   <button class="action primary" id="play"><span class="mark">▶</span> Play</button>
    <button class="action" id="settings"><span class="mark">⚙</span> Settings</button>
    <button class="action" id="controls"><span class="mark">⌘</span> Controls</button>
    <button class="action" id="credits"><span class="mark">✦</span> Credits</button>
   </div>
  </div>
- <div class="menu-bottom"><span>Explore · Discover · Become</span><span>Version 0.2 · A Talon project</span></div>
+ <div class="menu-bottom"><span>Build 0.2</span><span>TALON</span></div>
 </div>
 <aside id="drawer">
  <div class="drawer-top"><h2 id="drawer-title">Settings</h2><button class="close" id="drawer-close" aria-label="Close">×</button></div>
@@ -120,7 +120,7 @@ input[type=range]{width:100%;accent-color:#c79b5c}
 <div id="pause">
  <div class="pause-card">
   <h2 id="pause-title">THE RIDGELINE</h2>
-  <p id="pause-copy">The wind moves through the grass. The world is yours to explore.</p>
+  <p id="pause-copy">You're on the hill above the valley. Press Enter the World to start moving.</p>
   <div class="pause-actions">
    <button class="action primary" id="resume"><span class="mark">▶</span><span id="resume-label">Enter the world</span></button>
    <button class="action" id="pause-settings"><span class="mark">⚙</span> Settings</button>
@@ -128,7 +128,7 @@ input[type=range]{width:100%;accent-color:#c79b5c}
   </div>
  </div>
 </div>
-<div id="gamehud"><div id="world-label"><b>THE FIRST FRONTIER</b><small>THE RIDGELINE</small></div><div id="crosshair"></div><div id="game-hint">CLICK TO LOOK AROUND &nbsp;·&nbsp; WASD TO MOVE &nbsp;·&nbsp; ESC TO PAUSE</div><div id="game-state">FIRST LIGHT<br>NO PATH IS SET</div></div>
+<div id="gamehud"><div id="world-label"><b>THE FIRST FRONTIER</b><small>THE RIDGELINE</small></div><div id="crosshair"></div><div id="game-hint">CLICK TO LOOK AROUND &nbsp;·&nbsp; WASD TO MOVE &nbsp;·&nbsp; ESC TO PAUSE</div><div id="game-state">BUILD 0.2</div></div>
 <div id="toast"></div><div id="fade"></div>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js';
@@ -270,7 +270,7 @@ function settingsMarkup(){
  return '<div class="setting"><label for="quality">World detail <output id="quality-value">'+settings.quality.toUpperCase()+'</output></label><select id="quality"><option value="low">Low — smoother performance</option><option value="medium">Medium — balanced</option><option value="high">High — full detail</option></select><small>Changes shadow quality and rendering detail.</small></div>'+
  '<div class="setting"><label for="fov">Field of view <output id="fov-value">'+settings.fov+'°</output></label><input id="fov" type="range" min="60" max="100" step="1" value="'+settings.fov+'"><small>A wider view shows more of the world.</small></div>'+
  '<div class="setting"><label for="sensitivity">Mouse sensitivity <output id="sens-value">'+settings.sensitivity.toFixed(1)+'×</output></label><input id="sensitivity" type="range" min=".4" max="2.2" step=".1" value="'+settings.sensitivity+'"><small>Adjust how quickly the camera turns.</small></div>'+
- '<p class="drawer-note">More options will arrive as the frontier grows. Your choices are saved in this browser.</p>';
+ '<p class="drawer-note">Settings are saved in this browser.</p>';
 }
 function openSettings(){
  showDrawer('Settings',settingsMarkup());
@@ -282,10 +282,10 @@ function openSettings(){
 function saveSettings(){try{localStorage.setItem('mgh-settings',JSON.stringify(settings));}catch(e){}}
 try{const stored=JSON.parse(localStorage.getItem('mgh-settings')||'null');if(stored){if(['low','medium','high'].includes(stored.quality))settings.quality=stored.quality;if(stored.fov>=60&&stored.fov<=100)settings.fov=stored.fov;if(stored.sensitivity>=.4&&stored.sensitivity<=2.2)settings.sensitivity=stored.sensitivity;}}catch(e){}
 applySettings();
-function openControls(){showDrawer('Controls','<p class="drawer-note">The frontier is yours to cross. These are the current movement controls.</p>'+
+function openControls(){showDrawer('Controls','<p class="drawer-note">Current movement controls:</p>'+
  '<div class="keyline"><span>Move</span><span>W A S D</span></div><div class="keyline"><span>Look around</span><span>MOUSE</span></div><div class="keyline"><span>Jump</span><span>SPACE</span></div><div class="keyline"><span>Sprint</span><span>SHIFT</span></div><div class="keyline"><span>Pause / release mouse</span><span>ESC</span></div><div class="keyline"><span>Capture mouse</span><span>CLICK</span></div>'+
- '<p class="drawer-note">The grapple spike is part of the game's direction. Its traversal and combat abilities are still being built.</p>');}
-function openCredits(){showDrawer('The people behind it','<div class="credit-logo">TALON</div><div class="credit-sub">INDEPENDENT CREATIVE STUDIO</div><div class="credit-rule"></div><p class="drawer-note">A world made for curious explorers, stubborn adventurers, and anyone who has ever looked at a distant ridge and wondered what was beyond it.</p><div class="credit-role">Game and creative direction</div><div class="credit-name">Talon</div><div class="credit-role">A Talon original project</div><div class="credit-name">Moles Go Home</div><div class="credit-rule"></div><p class="drawer-note">Built one piece at a time. The frontier is only the beginning.</p>');}
+ '<p class="drawer-note">The grapple spike is planned as the main weapon and traversal tool. Its controls are not implemented yet.</p>');}
+function openCredits(){showDrawer('Credits','<div class="credit-logo">TALON</div><div class="credit-sub">INDEPENDENT CREATIVE STUDIO</div><div class="credit-rule"></div><p class="drawer-note">Moles Go Home is an original game by Talon.</p><div class="credit-role">Studio</div><div class="credit-name">Talon</div><div class="credit-role">Game</div><div class="credit-name">Moles Go Home</div>');}
 $('settings').onclick=openSettings;$('controls').onclick=openControls;$('credits').onclick=openCredits;
 $('drawer-close').onclick=closeDrawer;
 $('play').onclick=beginLoading;
@@ -298,7 +298,7 @@ $('leave').onclick=()=>{
 let loadTimer=null;
 function beginLoading(){
  mode='loading';$('menu').classList.add('leaving');$('shade').style.display='none';$('loading').classList.add('show');
- const messages=['Preparing the frontier...','Waking the old stones...','Finding the ridgeline...','Almost there...'];
+ const messages=['Loading terrain...','Placing trees...','Setting up the ridgeline...','Almost ready...'];
  let p=0;$('loadbar').style.width='0%';$('loadpercent').textContent='0%';$('loadtext').textContent=messages[0];
  clearInterval(loadTimer);
  loadTimer=setInterval(()=>{
