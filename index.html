@@ -100,8 +100,6 @@ input[type=range]{width:100%;accent-color:#c79b5c}
 #world-label{position:absolute;top:30px;left:34px;color:#eee6d5;text-shadow:0 2px 12px #000}
 #world-label b{font:600 16px Cinzel,Georgia,serif;letter-spacing:.18em}
 #world-label small{display:block;margin-top:7px;font-size:9px;letter-spacing:.25em;color:#d3b77e}
-#game-hint{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);padding:10px 16px;border:1px solid #bca06a55;background:#111913b8;color:#e3dac7;font-size:10px;letter-spacing:.08em;white-space:nowrap}
-#game-state{position:absolute;bottom:24px;right:28px;color:#ded5c1;text-align:right;font-size:9px;letter-spacing:.15em;text-shadow:0 2px 8px #000}
 #fade{position:fixed;z-index:9;inset:0;background:#080c0a;opacity:0;pointer-events:none;transition:opacity .65s}
 #fade.on{opacity:1}
 #toast{position:fixed;z-index:4;top:22px;left:50%;transform:translateX(-50%);padding:10px 16px;background:#101713d9;border:1px solid #b99a6355;color:#e7d9bd;font-size:10px;letter-spacing:.1em;opacity:0;transition:opacity .25s;pointer-events:none}
@@ -469,9 +467,8 @@ $('inventory-close').onclick=closeInventory;
 $('inventory-screen').addEventListener('click',e=>{if(e.target===$('inventory-screen'))closeInventory();});
 updateStats();renderInventory();
 
-function openControls(){showDrawer('Controls','<p class="drawer-note">Current movement controls:</p>'+
- '<div class="keyline"><span>Move</span><span>W A S D</span></div><div class="keyline"><span>Look around</span><span>MOUSE</span></div><div class="keyline"><span>Jump</span><span>SPACE</span></div><div class="keyline"><span>Sprint</span><span>SHIFT</span></div><div class="keyline"><span>Pause / release mouse</span><span>ESC</span></div><div class="keyline"><span>Capture mouse</span><span>CLICK</span></div>'+
- '<p class="drawer-note">The grapple spike is planned as the main weapon and traversal tool. Its controls are not implemented yet.</p>');}
+function openControls(){showDrawer('Controls','<p class="drawer-note">Movement and exploration:</p>'+
+ '<div class="keyline"><span>Move</span><span>W A S D</span></div><div class="keyline"><span>Look around</span><span>MOUSE</span></div><div class="keyline"><span>Jump</span><span>SPACE</span></div><div class="keyline"><span>Sprint</span><span>SHIFT</span></div><div class="keyline"><span>Talk to the ghost</span><span>E</span></div><div class="keyline"><span>Open satchel</span><span>I</span></div><div class="keyline"><span>Select quick slot</span><span>1–5</span></div><div class="keyline"><span>Pause</span><span>ESC</span></div>');}
 function openCredits(){showDrawer('Credits','<div class="credit-logo">TALON</div><div class="credit-rule"></div><p class="drawer-note">The Lost Frontier is an original game by Talon.</p><div class="credit-role">Studio</div><div class="credit-name">Talon</div><div class="credit-role">Game</div><div class="credit-name">The Lost Frontier</div>');}
 $('settings').onclick=openSettings;$('controls').onclick=openControls;$('credits').onclick=openCredits;
 $('drawer-close').onclick=closeDrawer;
@@ -635,7 +632,7 @@ function animate(){
  ghost.rotation.y=Math.sin(tickTime*.52)*.12;ghostRing.rotation.z=tickTime*.42;
  motes.forEach((m,i)=>{const a=tickTime*.8+i*Math.PI*.5;m.position.set(Math.cos(a)*.83,.15+Math.sin(a*1.2)*.35,Math.sin(a)*.52);});
  clouds.forEach((cloud,i)=>{cloud.position.x+=dt*(.55+i*.07);if(cloud.position.x>190)cloud.position.x=-190;});
- updateDayNight(dt);
+ if(mode!=='game'||locked)updateDayNight(dt);
  renderer.render(scene,camera);
 }
 animate();
