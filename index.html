@@ -376,6 +376,11 @@ groundTextureLoader.load(groundTextureURL,texture=>{
  texture.wrapS=THREE.RepeatWrapping;texture.wrapT=THREE.RepeatWrapping;
  texture.repeat.set(5,5);texture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
  groundMat.map=texture;groundMat.color.set(0xffffff);groundMat.needsUpdate=true;
+ // Reuse the same CC0 surface at a larger scale on the distant stone ridges.
+ ridgeMaterials.forEach(material=>{
+  const cliffTexture=texture.clone();cliffTexture.repeat.set(1.7,1.7);
+  material.map=cliffTexture;material.needsUpdate=true;
+ });
 },undefined,()=>console.warn('Ground texture unavailable; using the terrain colour fallback.'));
 
 const pathMat=standard(0x897b5b);
