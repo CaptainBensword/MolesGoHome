@@ -256,7 +256,7 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
 const $=id=>document.getElementById(id);
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x91a9a1);
-scene.fog=new THREE.FogExp2(0x91a9a1,.0030);
+scene.fog=new THREE.FogExp2(0x91a9a1,.0017);
 const camera=new THREE.PerspectiveCamera(76,innerWidth/innerHeight,.1,650);
 camera.rotation.order='YXZ';
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
@@ -280,27 +280,42 @@ const fill=new THREE.DirectionalLight(0xb2c7d1,.55);fill.position.set(55,35,-80)
 const standard=(color,roughness=1,metalness=0)=>new THREE.MeshStandardMaterial({color,roughness,metalness});
 const groundMat=new THREE.MeshStandardMaterial({vertexColors:true,roughness:1});
 function heightAt(x,z){
- const summit=28*Math.exp(-((x*x)/(2*56*56)+(Math.pow(z-20,2))/(2*66*66)));
- const westRidge=24*Math.exp(-((Math.pow(x+82,2))/(2*38*38)+(Math.pow(z+72,2))/(2*54*54)));
- const eastRidge=22*Math.exp(-((Math.pow(x-88,2))/(2*42*42)+(Math.pow(z+60,2))/(2*58*58)));
- const farSpine=13*Math.exp(-((Math.pow(x+8,2))/(2*94*94)+(Math.pow(z+132,2))/(2*34*34)));
- const slope=2.1*Math.sin(x*.018+z*.012)+1.2*Math.cos(z*.026-x*.011)+.65*Math.sin((x+z)*.048);
- const valley=-7*Math.exp(-(x*x)/(2*20*20))*Math.exp(-Math.pow(z+44,2)/(2*55*55));
- return summit+westRidge+eastRidge+farSpine+slope+valley;
+ const mainMass=58*Math.exp(-((x*x)/(2*66*66)+(Math.pow(z-24,2))/(2*82*82)));
+ const westShoulder=27*Math.exp(-((Math.pow(x+78+z*.16,2))/(2*29*29)+(Math.pow(z+53,2))/(2*78*78)));
+ const eastShoulder=30*Math.exp(-((Math.pow(x-88+z*.12,2))/(2*34*34)+(Math.pow(z+76,2))/(2*82*82)));
+ const farRidge=19*Math.exp(-((Math.pow(x+4,2))/(2*125*125)+(Math.pow(z+137,2))/(2*42*42)));
+ const cutValley=-13*Math.exp(-(x*x)/(2*24*24))*Math.exp(-Math.pow(z+72,2)/(2*80*80));
+ const shoulderRidges=4.5*Math.sin(x*.035+z*.018)+2.8*Math.sin(z*.052-x*.021)+1.2*Math.cos((x-z)*.095);
+ const highRock=2.2*Math.sin(x*.11+z*.07)*Math.sin(z*.05);
+ return Math.max(-5,mainMass+westShoulder+eastShoulder+farRidge+cutValley+shoulderRidges+highRock);
 }
-const terrainGeo=new THREE.PlaneGeometry(360,360,190,190);
-const pos=terrainGeo.attributes.position;
-const colors=[];
+const terrainGeo=new THREE.PlaneGeometry(560,560,230,230);
+const pos=terrainGeo.attributes.position,colors=[];
 for(let i=0;i<pos.count;i++){
  const x=pos.getX(i),z=-pos.getY(i),h=heightAt(x,z);
  pos.setZ(i,h);
- const shade=THREE.MathUtils.clamp((h+3)/20,0,1);
- const c=new THREE.Color().setRGB(.30+shade*.075,.38+shade*.065,.235+shade*.035);
+ const grass=new THREE.Color(0x9aaa73),rock=new THREE.Color(0x85877a),snowTint=new THREE.Color(0xd0d0c5);
+ const alpine=THREE.MathUtils.smoothstep(h,27,53),snow=THREE.MathUtils.smoothstep(h,68,88);
+ const c=grass.clone().lerp(rock,alpine).lerp(snowTint,snow*.7);
+ const variation=.94+Math.sin(x*.037+z*.025)*.035;
+ c.multiplyScalar(variation);
  colors.push(c.r,c.g,c.b);
 }
 terrainGeo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
 terrainGeo.rotateX(-Math.PI/2);terrainGeo.computeVertexNormals();
 const terrain=new THREE.Mesh(terrainGeo,groundMat);terrain.receiveShadow=true;scene.add(terrain);
+
+// CC0 ground material from Poly Haven. The vertex-colour terrain remains as a fallback
+// if the external texture cannot load.
+const groundTextureURL='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/4k/rocky_terrain/rocky_terrain_diff_4k.jpg';
+const groundTextureLoader=new THREE.TextureLoader();
+groundTextureLoader.setCrossOrigin('anonymous');
+groundTextureLoader.load(groundTextureURL,texture=>{
+ texture.colorSpace=THREE.SRGBColorSpace;
+ texture.wrapS=THREE.RepeatWrapping;texture.wrapT=THREE.RepeatWrapping;
+ texture.repeat.set(5,5);texture.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+ groundMat.map=texture;groundMat.color.set(0xffffff);groundMat.needsUpdate=true;
+},undefined,()=>console.warn('Ground texture unavailable; using the terrain colour fallback.'));
 
 const pathMat=standard(0x897b5b);
 const pathPoints=[];
@@ -345,16 +360,49 @@ instanced(trunkGeo,trunkMat,treeData,(o,d)=>{o.position.set(d.x,d.y+1.4*d.s,d.z)
 crownGeos.forEach((geo,t)=>instanced(geo,leafMats[t],treeData,(o,d)=>{o.position.set(d.x,d.y+(2.55+t*.91)*d.s,d.z);o.scale.setScalar(d.s);o.rotation.y=rand(Math.round(d.x*5+d.z*11+t))*6.28;}));
 
 
-// Distant mountain faces frame the valley.
-const rockFaces=[standard(0x535c58),standard(0x626a64),standard(0x46514d)],snowMat=standard(0xb7b9ad);
-function mountainPeak(x,z,radius,height,material,seed){
- const base=heightAt(x,z),peak=new THREE.Mesh(new THREE.ConeGeometry(radius,height,7,2),material);
- peak.position.set(x,base+height*.48,z);peak.rotation.y=seed*.7;peak.castShadow=true;peak.receiveShadow=true;scene.add(peak);
- const cap=new THREE.Mesh(new THREE.ConeGeometry(radius*.31,height*.16,7,1),snowMat);
- cap.position.set(x,base+height*.87,z);cap.rotation.y=seed*.7;scene.add(cap);
+// Faceted distant ridges give the valley a clear mountain skyline.
+const ridgeMaterials=[
+ new THREE.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:1}),
+ new THREE.MeshStandardMaterial({vertexColors:true,flatShading:true,roughness:1})
+];
+function makeMountainRange(centerX,centerZ,width,depth,height,baseY,seed,near=false){
+ const count=14,frontZ=centerZ+depth*.5,backZ=centerZ-depth*.5;
+ const ridge=[];
+ for(let i=0;i<=count;i++){
+  const t=i/count,x=centerX-width*.5+width*t;
+  const broad=.48+Math.pow(Math.sin(Math.PI*t),.5)*.38;
+  const peakNoise=.48+rand(seed+i*13)*.52;
+  const sharper=(i%3===1?1.12:.88);
+  const y=baseY+height*Math.min(1,broad*peakNoise*sharper);
+  const z=centerZ+(rand(seed+i*19)-.5)*depth*.22;
+  ridge.push({x,y,z});
+ }
+ const vertices=[],vertexColors=[];
+ function tri(a,b,d,color){
+  for(const p of [a,b,d]){vertices.push(p.x,p.y,p.z);vertexColors.push(color.r,color.g,color.b);}
+ }
+ for(let i=0;i<count;i++){
+  const a=ridge[i],b=ridge[i+1];
+  const f0={x:a.x,y:baseY,z:frontZ},f1={x:b.x,y:baseY,z:frontZ};
+  const r0={x:a.x,y:baseY,z:backZ},r1={x:b.x,y:baseY,z:backZ};
+  const base=near?new THREE.Color(0x59665b):new THREE.Color(0x57636a);
+  const shade1=base.clone().multiplyScalar(.83+rand(seed+i*3)*.22);
+  const shade2=base.clone().multiplyScalar(.78+rand(seed+i*5)*.28);
+  tri(f0,f1,b,shade1);tri(f0,b,a,shade2);
+  tri(r1,r0,a,shade1);tri(r1,a,b,shade2);
+  const sideColor=base.clone().multiplyScalar(.7);
+  tri(f0,a,r0,sideColor);tri(f1,r1,b,sideColor);
+ }
+ const geo=new THREE.BufferGeometry();
+ geo.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));
+ geo.setAttribute('color',new THREE.Float32BufferAttribute(vertexColors,3));
+ geo.computeVertexNormals();
+ const mesh=new THREE.Mesh(geo,ridgeMaterials[near?0:1]);
+ mesh.castShadow=true;mesh.receiveShadow=true;scene.add(mesh);
 }
-mountainPeak(-112,-151,43,82,rockFaces[0],1);mountainPeak(-54,-180,51,111,rockFaces[1],2);
-mountainPeak(18,-168,45,96,rockFaces[0],3);mountainPeak(94,-151,49,88,rockFaces[2],4);
+makeMountainRange(-4,-228,560,44,112,-8,121,false);
+makeMountainRange(0,-312,680,60,172,-18,431,false);
+makeMountainRange(-14,-168,380,32,70,-4,77,true);
 const cloudMat=new THREE.MeshBasicMaterial({color:0xd5dfdc,transparent:true,opacity:.15,depthWrite:false}),clouds=[];
 function makeCloud(x,y,z,s){
  const group=new THREE.Group();
@@ -365,7 +413,7 @@ makeCloud(-62,47,-42,1.3);makeCloud(48,55,-74,1.1);makeCloud(110,48,-121,1.6);
 makeCloud(-132,59,-142,1.25);makeCloud(12,64,-164,1.4);
 
 // First-person traveler, starting with empty hands.
-const player={x:0,z:17,y:heightAt(0,17),vy:0,grounded:true};
+const player={x:0,z:24,y:heightAt(0,24),vy:0,grounded:true};
 let yaw=0,pitch=-.045,mode='menu',locked=false,moveSpeed=8;
 let health=100,maxHealth=100,experience=0,level=1,selectedSlot=0,inventoryOpen=false,guideActive=false,guideStarted=false;
 const inventoryItems=Array(12).fill(null),hotbarSlots=5;
@@ -390,7 +438,7 @@ ghostRing.rotation.x=Math.PI/2;ghostRing.position.y=-.03;ghost.add(ghostRing);
 const ghostLight=new THREE.PointLight(0x9bc8c7,1.7,13);ghostLight.position.set(0,.4,0);ghost.add(ghostLight);
 const motes=[];
 for(let i=0;i<4;i++){const mote=new THREE.Mesh(new THREE.SphereGeometry(.045,8,6),new THREE.MeshBasicMaterial({color:0xc1e2dc,transparent:true,opacity:.7}));ghost.add(mote);motes.push(mote);}
-ghost.position.set(0,heightAt(0,9)+2.1,9);scene.add(ghost);
+ghost.position.set(1.2,heightAt(1.2,18)+2.1,18);scene.add(ghost);
 const sleeveMat=standard(0x34413d),skinMat=standard(0xb68f72),hands=new THREE.Group();
 function makeHand(side){
  const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.105,.42,4,8),sleeveMat);arm.position.set(side*.42,-.53,-.78);arm.rotation.z=-side*.22;arm.rotation.x=-.16;hands.add(arm);
@@ -629,7 +677,7 @@ function animate(){
   camera.position.set(24+Math.sin(t*.055)*29,39+Math.sin(t*.11)*2.2,72+Math.cos(t*.055)*12);
   camera.lookAt(0,30,-112);hands.visible=false;
  }else if(mode==='game'){
-  updateGame(dt);ghost.position.y=heightAt(0,9)+2.1+Math.sin(tickTime*1.5)*.28;hands.visible=true;
+  updateGame(dt);ghost.position.y=heightAt(1.2,18)+2.1+Math.sin(tickTime*1.5)*.28;hands.visible=true;
  }else{hands.visible=false;}
  ghost.rotation.y=Math.sin(tickTime*.52)*.12;ghostRing.rotation.z=tickTime*.42;
  motes.forEach((m,i)=>{const a=tickTime*.8+i*Math.PI*.5;m.position.set(Math.cos(a)*.83,.15+Math.sin(a*1.2)*.35,Math.sin(a)*.52);});
