@@ -51,7 +51,35 @@ input[type=range]{width:100%;accent-color:#c79b5c}
 .credit-rule{height:1px;background:linear-gradient(90deg,var(--gold2),transparent);margin:28px 0}
 .credit-role{font-size:9px;color:#a89f8c;letter-spacing:.24em;text-transform:uppercase;margin-top:24px}
 .credit-name{font:600 19px Cinzel,Georgia,serif;color:#f1e7d2;margin-top:8px}
-#story{position:fixed;z-index:10;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;background:radial-gradient(ellipse at 52% 43%,rgba(76,76,49,.28),transparent 48%),#101713}
+/* Opening story: black, quiet, and mostly text. */
+#story{position:fixed;z-index:7;inset:0;display:flex;align-items:center;justify-content:center;padding:9vh 8vw;background:#030504;color:#eee9dc;opacity:0;visibility:hidden;pointer-events:none;overflow:hidden;transition:opacity .8s,visibility .8s}
+#story.visible{opacity:1;visibility:visible;pointer-events:auto}
+#story:before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 48%,rgba(29,35,31,.26),transparent 58%),linear-gradient(90deg,#020303 0%,transparent 24%,transparent 76%,#020303 100%);pointer-events:none}
+.story-mist{position:absolute;pointer-events:none;border-radius:50%;filter:blur(46px);opacity:.19;mix-blend-mode:screen}
+.story-mist.one{width:105vmax;height:105vmax;left:-36vmax;top:-49vmax;background:conic-gradient(from 20deg,transparent 0 48deg,rgba(132,149,137,.22) 90deg,transparent 142deg,rgba(100,116,107,.18) 210deg,transparent 280deg);animation:story-swirl 72s linear infinite}
+.story-mist.two{width:82vmax;height:82vmax;right:-36vmax;bottom:-48vmax;background:conic-gradient(from 160deg,transparent 0 62deg,rgba(125,137,128,.19) 112deg,transparent 175deg,rgba(154,146,123,.13) 240deg,transparent 310deg);animation:story-swirl-reverse 94s linear infinite}
+#story.threat .story-mist{animation:story-pulse 2.6s ease-in-out infinite}
+#story.threat .story-mist.two{animation-delay:.3s}
+@keyframes story-swirl{to{transform:rotate(360deg)}}
+@keyframes story-swirl-reverse{to{transform:rotate(-360deg)}}
+@keyframes story-pulse{0%,100%{opacity:.13;transform:scale(.92)}50%{opacity:.48;transform:scale(1.08)}}
+.story-content{position:relative;z-index:1;width:min(720px,100%);text-align:center;transition:opacity .22s,transform .22s}
+.story-content.changing{opacity:0;transform:translateY(8px)}
+.story-kicker{font-size:9px;letter-spacing:.42em;text-transform:uppercase;color:#b7a27d;margin-bottom:32px}
+.story-copy{font:500 clamp(19px,2.35vw,27px)/1.85 Cinzel,Georgia,serif;letter-spacing:.025em;color:#e9e4d8;text-shadow:0 2px 28px #000;min-height:200px}
+.story-copy p{margin:0 0 10px}
+.story-copy p:last-child{color:#cfc7b5}
+.story-threat{color:#d5b98a!important;text-shadow:0 0 18px rgba(188,147,90,.2),0 2px 25px #000}
+.story-footer{display:flex;justify-content:space-between;align-items:center;margin-top:42px;border-top:1px solid rgba(191,169,128,.2);padding-top:18px}
+.story-count{font-size:9px;letter-spacing:.23em;color:#827e70}
+.story-actions{display:flex;gap:22px;align-items:center}
+.story-btn{border:0;background:transparent;color:#c9c2b2;font:600 10px Inter,system-ui,sans-serif;letter-spacing:.18em;text-transform:uppercase;padding:12px 5px;cursor:pointer}
+.story-btn:hover{color:#fff}
+.story-btn.primary{padding:14px 20px;border:1px solid rgba(194,164,111,.62);color:#ead8b6;background:rgba(99,77,48,.16)}
+.story-btn.primary:hover{background:rgba(135,102,59,.28)}
+@media(max-width:650px){#story{padding:8vh 8vw}.story-copy{font-size:18px;line-height:1.8;min-height:240px}.story-kicker{margin-bottom:22px}.story-footer{margin-top:25px}.story-actions{gap:12px}}
+@media(prefers-reduced-motion:reduce){.story-mist,.story-content,#story{animation:none!important;transition:none!important}}
+#loading{position:fixed;z-index:10;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;background:radial-gradient(ellipse at 52% 43%,rgba(76,76,49,.28),transparent 48%),#101713}
 #loading.show{display:flex}
 .load-kicker{font-size:9px;letter-spacing:.42em;color:var(--gold);text-transform:uppercase}
 .load-title{font:600 clamp(34px,5vw,58px) Cinzel,Georgia,serif;letter-spacing:.12em;margin:19px 0 9px}
