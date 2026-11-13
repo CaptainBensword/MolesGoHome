@@ -108,7 +108,7 @@ const swingHint=document.getElementById('swing-hint');
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x8bb5cf);
 scene.fog=new THREE.FogExp2(0x8bb5cf,.0025);
-const camera=new THREE.PerspectiveCamera(68,innerWidth/innerHeight,.1,900);
+const camera=new THREE.PerspectiveCamera(78,innerWidth/innerHeight,.1,900);
 camera.position.set(0,8,38);
 const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:false,powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.5));
@@ -479,7 +479,7 @@ function updatePlayer(dt){
  if(move.lengthSq()>0)move.normalize();
 
  if(grappling&&swingPoint&&zipDestination){
-  const ropeStart=camera.position.clone();
+  const ropeStart=new THREE.Vector3(player.pos.x,player.pos.y+1.68,player.pos.z);
   rope.geometry.setFromPoints([ropeStart,swingPoint]);rope.visible=true;
   const toTarget=tmpB.copy(zipDestination).sub(player.pos);
   const distance=toTarget.length();
@@ -522,7 +522,7 @@ function updatePlayer(dt){
  }
  if(player.pos.y<-32)respawn();
  if(grappling&&swingPoint){
-  rope.geometry.setFromPoints([camera.position,swingPoint]);rope.visible=true;
+  rope.geometry.setFromPoints([new THREE.Vector3(player.pos.x,player.pos.y+1.68,player.pos.z),swingPoint]);rope.visible=true;
  }
 }
 
