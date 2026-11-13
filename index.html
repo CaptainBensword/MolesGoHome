@@ -191,7 +191,7 @@ const antennaMat=mat(0x899ba4,.42,.6);
 const rooftopBoxMat=mat(0x45535b,.7,.22);
 
 function addBuilding(x,z,w,d,h,style='standard'){
- const facade=new THREE.MeshStandardMaterial({map:facadeTexture(buildings.length),roughness:style==='glass'?.42:.88,metalness:style==='glass'?.38:.08});
+ const facade=new THREE.MeshStandardMaterial({map:facadeTexture(buildings.length),roughness:style==='glass' ? .42 : .88,metalness:style==='glass' ? .38 : .08});
  if(style==='glass')facade.color.setHex(0xb7d8e7);
  if(style==='artdeco')facade.color.setHex(0xd1b18a);
  const tierPlan=style==='artdeco'?[{f:.13,s:.82},{f:.10,s:.66},{f:.08,s:.48},{f:.05,s:.30}]:
@@ -417,7 +417,7 @@ document.getElementById('start').addEventListener('click',startRun);
 document.getElementById('resume').addEventListener('click',resumeRun);
 document.getElementById('restart').addEventListener('click',()=>{resetRun();resumeRun();});
 document.getElementById('how').addEventListener('click',()=>{
- document.querySelector('.menu-sub').textContent='WASD to run · Space to jump · Click and hold to zip toward the closest rooftop anchor in front of you · Release to launch away. Shift no longer slows your run.';
+ document.querySelector('.menu-sub').textContent='WASD to run · Space to jump · Click and hold to zip toward the closest rooftop anchor in front of you · Release early to keep your momentum.';
  document.querySelector('.menu-note').textContent='Esc pauses · R respawns · Find all five rooftop relays';
 });
 canvas.addEventListener('mousedown',e=>{
@@ -436,6 +436,7 @@ addEventListener('keydown',e=>{
  if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
  if(e.code==='Escape'&&mode==='game')pauseRun();
  if(e.code==='KeyR'&&mode==='game')respawn();
+ if(e.code==='Space'&&mode==='game'&&!e.repeat&&player.grounded){player.vel.y=12.5;player.grounded=false;}
 });
 addEventListener('keyup',e=>{keys[e.code]=false;});
 addEventListener('mousemove',e=>{
@@ -448,8 +449,6 @@ document.addEventListener('pointerlockchange',()=>{
  else if(mode==='game'&&document.pointerLockElement&&mouseDown&&!grappling)attemptGrapple();
 });
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&mode==='game')pauseRun();});
-
-function collideBuildings(previousY){
 
 function collideBuildings(previousY){
  player.grounded=false;
@@ -528,8 +527,6 @@ function updatePlayer(dt){
 }
 
 function updateHero(dt,time){
-
-function updateHero(dt,time){
  hero.position.copy(player.pos);
  const speed=Math.hypot(player.vel.x,player.vel.z);
  if(speed>1.2)hero.rotation.y=Math.atan2(player.vel.x,-player.vel.z);
@@ -555,8 +552,6 @@ function updateCamera(dt){
  camera.lookAt(camera.position.clone().addScaledVector(lookDirection,100));
  camera.updateMatrixWorld(true);
 }
-
-function updateRelays(dt,time){
 
 function updateRelays(dt,time){
  for(const r of relays){
