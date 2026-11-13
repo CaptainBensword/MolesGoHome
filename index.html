@@ -294,6 +294,30 @@ const $=id=>document.getElementById(id);
 const scene=new THREE.Scene();
 scene.background=new THREE.Color(0x91a9a1);
 scene.fog=new THREE.FogExp2(0x91a9a1,.0017);
+const skyUniforms={
+ topColor:{value:new THREE.Color(0x4d7898)},
+ horizonColor:{value:new THREE.Color(0xc1c6b4)},
+ groundColor:{value:new THREE.Color(0x71817d)},
+ sunTint:{value:new THREE.Color(0xffd8a0)}
+};
+const skyMaterial=new THREE.ShaderMaterial({
+ uniforms:skyUniforms,side:THREE.BackSide,depthWrite:false,depthTest:false,fog:false,
+ vertexShader:\`varying vec3 vSkyDir;
+ void main(){vSkyDir=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}\`,
+ fragmentShader:\`uniform vec3 topColor;uniform vec3 horizonColor;uniform vec3 groundColor;uniform vec3 sunTint;varying vec3 vSkyDir;
+ void main(){
+  float h=clamp(vSkyDir.y,-1.0,1.0);
+  float upper=smoothstep(-0.08,0.58,h);
+  float lower=1.0-smoothstep(-0.42,-0.08,h);
+  vec3 col=mix(horizonColor,topColor,upper);
+  col=mix(col,groundColor,lower);
+  float rim=exp(-pow((h-0.015)*17.0,2.0))*.18;
+  col=mix(col,sunTint,rim);
+  gl_FragColor=vec4(col,1.0);
+ }\`
+});
+const skyDome=new THREE.Mesh(new THREE.SphereGeometry(600,48,32),skyMaterial);
+skyDome.renderOrder=-1000;skyDome.frustumCulled=false;scene.add(skyDome);
 const camera=new THREE.PerspectiveCamera(76,innerWidth/innerHeight,.1,650);
 camera.rotation.order='YXZ';
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
@@ -703,6 +727,13 @@ function updateDayNight(dt){
  const sky=new THREE.Color().copy(skyNight).lerp(skyDay,daylight);
  if(dusk>0&&elevation>-.18)sky.lerp(skyDusk,dusk*.38);
  scene.background.copy(sky);scene.fog.color.copy(sky);
+ skyUniforms.topColor.value.set(0x101c32).lerp(new THREE.Color(0x3f78a6),daylight);
+ skyUniforms.horizonColor.value.set(0x493d4c).lerp(new THREE.Color(0xe0d5bb),daylight);
+ skyUniforms.groundColor.value.set(0x121b27).lerp(new THREE.Color(0x879b9a),daylight);
+ if(dusk>0&&elevation>-.18){
+  skyUniforms.horizonColor.value.lerp(new THREE.Color(0xd18e6d),dusk*.42);
+  skyUniforms.sunTint.value.set(0xffb779);
+ }else skyUniforms.sunTint.value.set(0xffdfab);
  hemi.intensity=.18+daylight*1.52;
  sun.intensity=.05+daylight*3.15;
  fill.intensity=.05+daylight*.5;
