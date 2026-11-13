@@ -431,6 +431,44 @@ function openSettings(){
 function saveSettings(){try{localStorage.setItem('mgh-settings',JSON.stringify(settings));}catch(e){}}
 try{const stored=JSON.parse(localStorage.getItem('mgh-settings')||'null');if(stored){if(['low','medium','high'].includes(stored.quality))settings.quality=stored.quality;if(stored.fov>=60&&stored.fov<=100)settings.fov=stored.fov;if(stored.sensitivity>=.4&&stored.sensitivity<=2.2)settings.sensitivity=stored.sensitivity;}}catch(e){}
 applySettings();
+
+function updateStats(){
+ $('health-value').textContent=Math.round(health)+' / '+maxHealth;
+ $('health-fill').style.width=Math.max(0,Math.min(100,health/maxHealth*100))+'%';
+ $('level-label').textContent='LEVEL '+level;
+ $('xp-value').textContent=experience+' / '+(level*100)+' XP';
+ $('xp-fill').style.width=Math.min(100,experience/(level*100)*100)+'%';
+ $('inv-level').textContent=level;
+ $('inv-xp').textContent=experience+' / '+(level*100);
+ $('inv-health').textContent=Math.round(health)+' / '+maxHealth;
+}
+function renderInventory(){
+ const grid=$('inventory-grid');grid.innerHTML='';
+ inventoryItems.forEach((item,i)=>{
+  const slot=document.createElement('div');slot.className='inventory-slot';
+  slot.innerHTML='<span>'+(i+1)+'</span>'+(item?item.name:'EMPTY');
+  grid.appendChild(slot);
+ });
+}
+function selectHotbar(index){
+ selectedSlot=index;
+ document.querySelectorAll('.hotbar-slot').forEach((el,i)=>el.classList.toggle('selected',i===index));
+}
+document.querySelectorAll('.hotbar-slot').forEach(el=>el.addEventListener('click',()=>selectHotbar(Number(el.dataset.slot))));
+function openInventory(){
+ if(mode!=='game'||inventoryOpen)return;
+ inventoryOpen=true;$('inventory-screen').classList.add('open');renderInventory();updateStats();
+ if(document.pointerLockElement)document.exitPointerLock();
+}
+function closeInventory(){
+ if(!inventoryOpen)return;
+ inventoryOpen=false;$('inventory-screen').classList.remove('open');
+ if(mode==='game'&&renderer.domElement.requestPointerLock)renderer.domElement.requestPointerLock();
+}
+$('inventory-close').onclick=closeInventory;
+$('inventory-screen').addEventListener('click',e=>{if(e.target===$('inventory-screen'))closeInventory();});
+updateStats();renderInventory();
+
 function openControls(){showDrawer('Controls','<p class="drawer-note">Current movement controls:</p>'+
  '<div class="keyline"><span>Move</span><span>W A S D</span></div><div class="keyline"><span>Look around</span><span>MOUSE</span></div><div class="keyline"><span>Jump</span><span>SPACE</span></div><div class="keyline"><span>Sprint</span><span>SHIFT</span></div><div class="keyline"><span>Pause / release mouse</span><span>ESC</span></div><div class="keyline"><span>Capture mouse</span><span>CLICK</span></div>'+
  '<p class="drawer-note">The grapple spike is planned as the main weapon and traversal tool. Its controls are not implemented yet.</p>');}
@@ -438,6 +476,16 @@ function openCredits(){showDrawer('Credits','<div class="credit-logo">TALON</div
 $('settings').onclick=openSettings;$('controls').onclick=openControls;$('credits').onclick=openCredits;
 $('drawer-close').onclick=closeDrawer;
 $('play').onclick=beginStory;
+
+let guideIndex=0;
+function showGuide(index){
+ guideIndex=index;
+ if(index>=guidePages.length){guideActive=false;$('ghost-guide').classList.remove('show');$('interact-prompt').style.display='none';return;}
+ guideActive=true;$('guide-text').textContent=guidePages[index];$('ghost-guide').classList.add('show');
+}
+function startGuide(){guideStarted=true;showGuide(0);}
+function talkToGhost(){showGuide(3);}
+
 const storyPages=[
  {kicker:'THE MESSAGE',lines:['You were a messenger.','There was a place you had to reach. A message you had to deliver.','You remember that much.']},
  {kicker:'WHAT IS MISSING',lines:['The journey is gone from your mind.','You cannot remember who sent you, what the message said, or why it mattered.','Only that you were meant to reach somewhere beyond the known roads.']},
@@ -476,14 +524,14 @@ $('story-next').onclick=()=>{
 };
 
 $('pause-settings').onclick=openSettings;
-$('resume').onclick=()=>{closeDrawer();$('pause').classList.remove('show');if(renderer.domElement.requestPointerLock)renderer.domElement.requestPointerLock();else toast('Use WASD to move and the mouse to look around.');};
+$('resume').onclick=()=>{closeDrawer();$('pause').classList.remove('show');if(renderer.domElement.requestPointerLock)renderer.domElement.requestPointerLock();hands.visible=true;if(!guideStarted)startGuide();};
 $('leave').onclick=()=>{
  if(document.pointerLockElement)document.exitPointerLock();
  mode='menu';$('pause').classList.remove('show');$('gamehud').style.display='none';$('menu').style.display='flex';$('shade').style.display='block';$('menu').classList.remove('leaving');camera.fov=settings.fov;positionCamera();closeDrawer();
 };
 let loadTimer=null;
 function beginLoading(){
- mode='loading';$('story').classList.remove('visible');$('menu').classList.add('leaving');$('menu').style.display='none';$('shade').style.display='none';$('loading').classList.add('show');
+ timeOfDay=.31;mode='loading';$('story').classList.remove('visible');$('menu').classList.add('leaving');$('menu').style.display='none';$('shade').style.display='none';$('loading').classList.add('show');
  const messages=['Loading terrain...','Placing trees...','Setting up the ridgeline...','Almost ready...'];
  let p=0;$('loadbar').style.width='0%';$('loadpercent').textContent='0%';$('loadtext').textContent=messages[0];
  clearInterval(loadTimer);
@@ -492,7 +540,7 @@ function beginLoading(){
   $('loadbar').style.width=p+'%';$('loadpercent').textContent=p+'%';$('loadtext').textContent=messages[Math.min(3,Math.floor(p/27))];
   if(p>=100){clearInterval(loadTimer);setTimeout(()=>{
    $('loading').classList.remove('show');$('menu').style.display='none';$('shade').style.display='none';$('gamehud').style.display='block';
-   mode='game';positionCamera();$('pause-title').textContent='THE RIDGELINE';$('pause-copy').textContent='You stand above the Lost Frontier. A trail winds down into the valley, and the old road disappears between the trees.';$('resume-label').textContent='Enter the world';$('pause').classList.add('show');
+   mode='game';positionCamera();hands.visible=false;guideStarted=false;guideActive=false;guideIndex=0;$('ghost-guide').classList.remove('show');$('pause-title').textContent='THE RIDGELINE';$('pause-copy').textContent='You wake on a high mountain ridge. A small pale figure is waiting just ahead.';$('resume-label').textContent='Wake up';$('pause').classList.add('show');
   },350);}
  },145);
 }
@@ -501,21 +549,27 @@ renderer.domElement.addEventListener('click',()=>{
 });
 document.addEventListener('pointerlockchange',()=>{
  locked=document.pointerLockElement===renderer.domElement;
- if(mode==='game'){
-  $('pause').classList.toggle('show',!locked);
-  $('game-hint').textContent=locked?'WASD MOVE  ·  SHIFT SPRINT  ·  SPACE JUMP  ·  ESC PAUSE':'CLICK TO LOOK AROUND  ·  WASD TO MOVE  ·  ESC TO PAUSE';
- }
+ if(mode==='game'&&!inventoryOpen)$('pause').classList.toggle('show',!locked);
 });
 document.addEventListener('mousemove',e=>{
- if(!locked||mode!=='game')return;
+ if(!locked||mode!=='game'||inventoryOpen)return;
  yaw-=e.movementX*.0022*settings.sensitivity;
  pitch=THREE.MathUtils.clamp(pitch-e.movementY*.0018*settings.sensitivity,-1.25,1.25);
  camera.rotation.set(pitch,yaw,0,'YXZ');
 });
 document.addEventListener('keydown',e=>{
- keys[e.code]=true;
  if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
- if(e.code==='Escape'&&mode==='game'&&locked){/* Browser releases pointer lock; pause is shown by the event above. */}
+ if(mode==='game'&&e.code==='KeyI'){e.preventDefault();if(inventoryOpen)closeInventory();else openInventory();return;}
+ if(mode==='game'&&inventoryOpen){if(e.code==='Escape')closeInventory();return;}
+ if(mode==='game'&&(e.code==='KeyE'||e.code==='Enter')){
+  if(guideActive){showGuide(guideIndex+1);return;}
+  const distance=Math.hypot(player.x-ghost.position.x,player.z-ghost.position.z);
+  if(distance<10){talkToGhost();return;}
+ }
+ if(mode==='game'&&e.code.startsWith('Digit')){
+  const n=Number(e.code.slice(5))-1;if(n>=0&&n<hotbarSlots)selectHotbar(n);
+ }
+ keys[e.code]=true;
 });
 document.addEventListener('keyup',e=>{keys[e.code]=false;});
 window.addEventListener('blur',()=>{for(const k in keys)keys[k]=false;});
@@ -540,21 +594,47 @@ function updateGame(dt){
  player.vy-=22*dt;player.y+=player.vy*dt;
  if(player.y<=floor){player.y=floor;player.vy=0;player.grounded=true;}
  positionCamera();
- // The spike shifts slightly with movement to keep the view grounded.
- weapon.position.y=-.53+(dir.lengthSq()>.01?Math.sin(clock.elapsedTime*10)*.018:0);
- weapon.rotation.z=-.48+(dir.lengthSq()>.01?Math.sin(clock.elapsedTime*10)*.025:0);
+ const ghostDistance=Math.hypot(player.x-ghost.position.x,player.z-ghost.position.z);
+ $('interact-prompt').style.display=(!guideActive&&ghostDistance<10&&locked)?'block':'none';
+}
+
+const skyDay=new THREE.Color(0x8eabb5),skyNight=new THREE.Color(0x101b29),skyDusk=new THREE.Color(0xb57959);
+const starsGeo=new THREE.BufferGeometry(),starPositions=[];
+for(let i=0;i<320;i++){const a=rand(i+8000)*Math.PI*2,y=rand(i+9000)*.85+.15,r=240;starPositions.push(Math.cos(a)*Math.sqrt(1-y*y)*r,y*r,Math.sin(a)*Math.sqrt(1-y*y)*r);}
+starsGeo.setAttribute('position',new THREE.Float32BufferAttribute(starPositions,3));
+const stars=new THREE.Points(starsGeo,new THREE.PointsMaterial({color:0xe3e8ee,size:1.05,transparent:true,opacity:0,depthWrite:false}));scene.add(stars);
+const moon=new THREE.Mesh(new THREE.SphereGeometry(5.2,20,16),new THREE.MeshBasicMaterial({color:0xd4d9df}));scene.add(moon);
+function updateDayNight(dt){
+ timeOfDay=(timeOfDay+dt/dayLength)%1;
+ const angle=(timeOfDay-.25)*Math.PI*2,elevation=Math.sin(angle);
+ const x=Math.cos(angle)*128,y=elevation*112,z=-48-Math.sin(angle)*18;
+ sun.position.set(x,y,z);sunDisc.position.set(x*.83,y*.83,z*.83);sunDisc.visible=elevation>-.12;
+ moon.position.set(-x*.72,-y*.72,-z*.72);moon.visible=elevation<.12;
+ const daylight=THREE.MathUtils.clamp((elevation+.12)/.55,0,1);
+ const dusk=1-Math.min(1,Math.abs(elevation)/.34);
+ const sky=new THREE.Color().copy(skyNight).lerp(skyDay,daylight);
+ if(dusk>0&&elevation>-.18)sky.lerp(skyDusk,dusk*.34);
+ scene.background.copy(sky);scene.fog.color.copy(sky);
+ hemi.intensity=.24+daylight*1.48;sun.intensity=.12+daylight*2.85;fill.intensity=.08+daylight*.42;
+ stars.material.opacity=(1-daylight)*.86;
+ const totalMinutes=Math.floor(timeOfDay*24*60),hours=Math.floor(totalMinutes/60),minutes=totalMinutes%60;
+ const period=hours>=5&&hours<11?'MORNING':hours>=11&&hours<17?'DAY':hours>=17&&hours<20?'EVENING':'NIGHT';
+ $('clock-display').textContent=String(hours).padStart(2,'0')+':'+String(minutes).padStart(2,'0')+'  '+period;
 }
 function animate(){
  requestAnimationFrame(animate);
- const dt=Math.min(clock.getDelta(),.04);
- if(mode==='menu'){
+ const dt=Math.min(clock.getDelta(),.04),tickTime=clock.elapsedTime;
+ if(mode==='menu'||mode==='story'){
   const t=clock.elapsedTime;
-  camera.position.set(menuCamStart.x+Math.sin(t*.12)*2.8,menuCamStart.y+Math.sin(t*.17)*.8,menuCamStart.z+Math.cos(t*.12)*2.8);
-  camera.lookAt(menuTarget);
-  weapon.visible=false;
- }else if(mode==='game'){weapon.visible=true;updateGame(dt);}
- else{weapon.visible=false;}
- marker.rotation.y+=dt*.32;marker.rotation.x=Math.sin(clock.elapsedTime*.7)*.12;
+  camera.position.set(24+Math.sin(t*.055)*29,39+Math.sin(t*.11)*2.2,72+Math.cos(t*.055)*12);
+  camera.lookAt(0,30,-112);hands.visible=false;
+ }else if(mode==='game'){
+  updateGame(dt);ghost.position.y=heightAt(0,9)+2.1+Math.sin(tickTime*1.5)*.28;hands.visible=true;
+ }else{hands.visible=false;}
+ ghost.rotation.y=Math.sin(tickTime*.52)*.12;ghostRing.rotation.z=tickTime*.42;
+ motes.forEach((m,i)=>{const a=tickTime*.8+i*Math.PI*.5;m.position.set(Math.cos(a)*.83,.15+Math.sin(a*1.2)*.35,Math.sin(a)*.52);});
+ clouds.forEach((cloud,i)=>{cloud.position.x+=dt*(.55+i*.07);if(cloud.position.x>190)cloud.position.x=-190;});
+ updateDayNight(dt);
  renderer.render(scene,camera);
 }
 animate();
