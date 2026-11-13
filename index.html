@@ -272,7 +272,7 @@ relayTargets.forEach((p,i)=>{
  const ring1=new THREE.Mesh(new THREE.TorusGeometry(1.45,.07,8,28),relayRingMat);ring1.rotation.x=Math.PI/2;g.add(ring1);
  const ring2=new THREE.Mesh(new THREE.TorusGeometry(1.9,.025,5,28),relayRingMat);ring2.rotation.y=.8;g.add(ring2);
  const beam=new THREE.Mesh(new THREE.CylinderGeometry(.025,.025,5.5,6),new THREE.MeshBasicMaterial({color:0x69e6ff,transparent:true,opacity:.28}));beam.position.y=2.4;g.add(beam);
- relays.push({group:g,core,ring1,ring2,collected:false});
+ relays.push({group:g,core,ring1,ring2,collected:false,baseY:g.position.y});
 });
 
 const hero=new THREE.Group();scene.add(hero);
@@ -381,7 +381,7 @@ function releaseGrapple(){grappling=false;swingPoint=null;rope.visible=false;tra
 document.getElementById('start').addEventListener('click',startRun);
 document.getElementById('resume').addEventListener('click',resumeRun);
 document.getElementById('restart').addEventListener('click',()=>{resetRun();resumeRun();});
-document.getElementById('how').addEventListener('click',()=>showToast('WASD to move · Space to jump · Hold click to swing'));
+document.getElementById('how').addEventListener('click',()=>{document.querySelector('.menu-sub').textContent='WASD or arrow keys to move · Space to jump · Hold left click to attach and swing · Shift to reel in. Aim at a glowing rooftop anchor.';document.querySelector('.menu-note').textContent='Esc pauses · R respawns · Collect all five glowing relays';});
 canvas.addEventListener('click',()=>{if(mode==='game'&&!document.pointerLockElement)canvas.requestPointerLock?.();});
 canvas.addEventListener('mousedown',e=>{if(e.button!==0)return;mouseDown=true;if(mode==='game'){if(!document.pointerLockElement)canvas.requestPointerLock?.();else attemptGrapple();}});
 addEventListener('mouseup',e=>{if(e.button===0){mouseDown=false;releaseGrapple();}});
@@ -489,7 +489,7 @@ function updateRelays(dt,time){
    r.group.rotation.y+=dt*.8;
    r.core.rotation.x+=dt*1.2;
    r.ring1.rotation.z+=dt*.7;r.ring2.rotation.x+=dt*.42;
-   r.group.position.y+=Math.sin(time*1.5+r.group.position.x)*.002;
+   r.group.position.y=r.baseY+Math.sin(time*1.5+r.group.position.x)*.22;
    if(player.pos.distanceTo(r.group.position)<3.1){
     r.collected=true;r.group.visible=false;collected++;updateRelayUI();
     showToast(collected===5?'NETWORK RESTORED':'Relay recovered · '+collected+' / 5');
