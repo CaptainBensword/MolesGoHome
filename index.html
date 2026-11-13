@@ -320,7 +320,7 @@ const path=new THREE.Mesh(pg,new THREE.MeshStandardMaterial({color:0x928365,roug
 
 // A distant warm sun gives the menu and hilltop a clear focal point.
 const sunDisc=new THREE.Mesh(new THREE.SphereGeometry(7,24,16),new THREE.MeshBasicMaterial({color:0xffd79b}));sunDisc.position.set(-95,82,-205);scene.add(sunDisc);
-const glow=new THREE.PointLight(0xffc77e,95,270,2);glow.position.copy(sunDisc.position);scene.add(glow);
+
 
 // Low-poly forest: instancing keeps the scene light enough for a browser.
 const trunkMat=standard(0x514233),leafMats=[standard(0x294b3d),standard(0x365a43),standard(0x49664a)];
@@ -374,10 +374,10 @@ const inventoryItems=Array(20).fill(null),hotbarSlots=5;
 let timeOfDay=.31;
 const dayLength=600;
 const guidePages=[
- 'There you are. I was beginning to think the mountain had swallowed you. Try moving with W, A, S and D. The mouse looks around.',
- 'Careful near the edge. Space lets you jump. Give yourself room before you try it.',
- 'Your satchel is still with you. Press I to open it. There is not much inside yet.',
- 'I found you here. I did not see where you came from.'
+ 'You\'re awake. Good. Use W, A, S and D to move. Move the mouse to look around.',
+ 'Mind the edge. Space makes you jump.',
+ 'Press I to open your satchel. It\'s empty. For now.',
+ 'I found you here. You were alone. I don\'t know where you came from.'
 ];
 
 const ghost=new THREE.Group();
@@ -487,10 +487,10 @@ function startGuide(){guideStarted=true;showGuide(0);}
 function talkToGhost(){showGuide(3);}
 
 const storyPages=[
- {kicker:'THE MESSAGE',lines:['You were a messenger.','There was a place you had to reach. A message you had to deliver.','You remember that much.']},
- {kicker:'WHAT IS MISSING',lines:['The journey is gone from your mind.','You cannot remember who sent you, what the message said, or why it mattered.','Only that you were meant to reach somewhere beyond the known roads.']},
- {kicker:'THE LOST FRONTIER',lines:['You wake at the edge of a place no map can explain.','The road ends here. Your reason for coming does not return.']},
- {kicker:'SOMEONE IS AWARE',lines:['Far beyond the dark, something has noticed you.','It was waiting long before you arrived.'],threat:true}
+ {kicker:'THE MESSAGE',lines:['You were carrying a message.','You were told to deliver it to a place that had no name on any map.']},
+ {kicker:'THE GAP',lines:['You remember the road. Then nothing.','Not who sent you. Not what the message said. Not why you agreed.']},
+ {kicker:'THE FRONTIER',lines:['You woke on a mountain above the clouds.','Below you, a road runs into a country you do not recognize.']},
+ {kicker:'SOMEONE ELSE',lines:['Someone knew you were coming.','They have been waiting.'],threat:true}
 ];
 let storyIndex=0;
 function renderStory(){
@@ -532,7 +532,7 @@ $('leave').onclick=()=>{
 let loadTimer=null;
 function beginLoading(){
  timeOfDay=.31;mode='loading';$('story').classList.remove('visible');$('menu').classList.add('leaving');$('menu').style.display='none';$('shade').style.display='none';$('loading').classList.add('show');
- const messages=['Loading terrain...','Placing trees...','Setting up the ridgeline...','Almost ready...'];
+ const messages=['Loading the world...','Setting the light...','Finishing the ridge...','Ready.'];
  let p=0;$('loadbar').style.width='0%';$('loadpercent').textContent='0%';$('loadtext').textContent=messages[0];
  clearInterval(loadTimer);
  loadTimer=setInterval(()=>{
@@ -561,7 +561,7 @@ document.addEventListener('keydown',e=>{
  if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
  if(mode==='game'&&e.code==='KeyI'){e.preventDefault();if(inventoryOpen)closeInventory();else openInventory();return;}
  if(mode==='game'&&inventoryOpen){if(e.code==='Escape')closeInventory();return;}
- if(mode==='game'&&(e.code==='KeyE'||e.code==='Enter')){
+ if(mode==='game'&&locked&&(e.code==='KeyE'||e.code==='Enter')){
   if(guideActive){showGuide(guideIndex+1);return;}
   const distance=Math.hypot(player.x-ghost.position.x,player.z-ghost.position.z);
   if(distance<10){talkToGhost();return;}
@@ -624,6 +624,7 @@ function updateDayNight(dt){
 function animate(){
  requestAnimationFrame(animate);
  const dt=Math.min(clock.getDelta(),.04),tickTime=clock.elapsedTime;
+ ghost.visible=mode==='game';
  if(mode==='menu'||mode==='story'){
   const t=clock.elapsedTime;
   camera.position.set(24+Math.sin(t*.055)*29,39+Math.sin(t*.11)*2.2,72+Math.cos(t*.055)*12);
