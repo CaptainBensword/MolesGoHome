@@ -338,7 +338,7 @@ skyDome.renderOrder=-1000;skyDome.frustumCulled=false;scene.add(skyDome);
 const camera=new THREE.PerspectiveCamera(76,innerWidth/innerHeight,.1,650);
 camera.rotation.order='YXZ';
 const renderer=new THREE.WebGLRenderer({antialias:true,powerPreference:'high-performance'});
-renderer.setPixelRatio(Math.min(devicePixelRatio,1.7));
+renderer.setPixelRatio(Math.min(devicePixelRatio,1.35));
 renderer.setSize(innerWidth,innerHeight);
 renderer.outputColorSpace=THREE.SRGBColorSpace;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
@@ -351,7 +351,7 @@ document.body.prepend(renderer.domElement);
 const hemi=new THREE.HemisphereLight(0xdde9df,0x53604a,1.65);scene.add(hemi);
 const sun=new THREE.DirectionalLight(0xffdfb1,3.1);
 sun.position.set(-75,105,55);sun.castShadow=true;
-sun.shadow.mapSize.set(1536,1536);
+sun.shadow.mapSize.set(1024,1024);
 sun.shadow.camera.left=-100;sun.shadow.camera.right=100;sun.shadow.camera.top=100;sun.shadow.camera.bottom=-100;
 sun.shadow.bias=-.00018;scene.add(sun);
 const fill=new THREE.DirectionalLight(0xb2c7d1,.55);fill.position.set(55,35,-80);scene.add(fill);
@@ -385,7 +385,7 @@ const terrain=new THREE.Mesh(terrainGeo,groundMat);terrain.receiveShadow=true;sc
 
 // CC0 ground material from Poly Haven. The vertex-colour terrain remains as a fallback
 // if the external texture cannot load.
-const groundTextureURL='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/4k/rocky_terrain/rocky_terrain_diff_4k.jpg';
+const groundTextureURL='https://dl.polyhaven.org/file/ph-assets/Textures/jpg/2k/rocky_terrain/rocky_terrain_diff_2k.jpg';
 const groundTextureLoader=new THREE.TextureLoader();
 groundTextureLoader.setCrossOrigin('anonymous');
 groundTextureLoader.load(groundTextureURL,texture=>{
@@ -520,15 +520,17 @@ makeSkyIsland(5,168,-248,1.7,36);
 // A disturbed battlefield: collapsed carts, scorched earth, snapped timber and rubble.
 const rubbleGeo=new THREE.DodecahedronGeometry(1,0);
 const rubbleMats=[standard(0x686b62),standard(0x77766b),standard(0x4c514d),standard(0x8a806d)];
+const rubbleSets=rubbleMats.map(()=>[]);
 for(let i=0;i<210;i++){
  const angle=rand(i+2100)*Math.PI*2,r=13+Math.sqrt(rand(i+2800))*67;
  const x=Math.cos(angle)*r,z=24+Math.sin(angle)*r;
  if(Math.hypot(x,z-24)<10)continue;
- const size=.22+rand(i+3500)*1.18,mesh=new THREE.Mesh(rubbleGeo,rubbleMats[i%rubbleMats.length]);
- mesh.position.set(x,heightAt(x,z)+size*.27,z);mesh.scale.set(size*1.15,size*.62,size*.9);
- mesh.rotation.set(rand(i+4100)*.6,rand(i+4200)*6.28,rand(i+4300)*.5);
- mesh.castShadow=true;mesh.receiveShadow=true;scene.add(mesh);
+ const size=.22+rand(i+3500)*1.18;
+ rubbleSets[i%rubbleSets.length].push({x,z,size,y:heightAt(x,z),rx:rand(i+4100)*.6,ry:rand(i+4200)*6.28,rz:rand(i+4300)*.5});
 }
+rubbleSets.forEach((set,index)=>instanced(rubbleGeo,rubbleMats[index],set,(o,d)=>{
+ o.position.set(d.x,d.y+d.size*.27,d.z);o.scale.set(d.size*1.15,d.size*.62,d.size*.9);o.rotation.set(d.rx,d.ry,d.rz);
+}));
 const charredWood=standard(0x342b25),weatheredWood=standard(0x65503b),burntMetal=standard(0x343b3a,.58,.42);
 const tornBanners=[],emberFires=[];
 function brokenWagon(x,z,size,rotation){
@@ -641,6 +643,8 @@ tetherCore.position.set(.54,-.43,-.73);grappleRig.add(tetherCore);
 grappleRig.visible=false;camera.add(grappleRig);
 
 const tetherLine=new THREE.Line(new THREE.BufferGeometry(),new THREE.LineBasicMaterial({color:0x8ce4d8,transparent:true,opacity:.92}));
+const tetherPositions=new Float32Array(13*3);
+tetherLine.geometry.setAttribute('position',new THREE.BufferAttribute(tetherPositions,3));
 tetherLine.visible=false;scene.add(tetherLine);
 const hookTip=new THREE.Mesh(new THREE.OctahedronGeometry(.16,1),new THREE.MeshBasicMaterial({color:0xc6fff0}));
 hookTip.visible=false;scene.add(hookTip);
@@ -653,7 +657,7 @@ const keys={};
 const settings={quality:'high',sensitivity:1,fov:76};
 function applySettings(){
  camera.fov=settings.fov;camera.updateProjectionMatrix();
- const ratio=settings.quality==='low'?.85:settings.quality==='medium'?1.15:1.7;
+ const ratio=settings.quality==='low'?.75:settings.quality==='medium'?1.0:1.35;
  renderer.setPixelRatio(Math.min(devicePixelRatio,ratio));
  renderer.shadowMap.enabled=settings.quality!=='low';
  renderer.shadowMap.needsUpdate=true;
@@ -906,13 +910,14 @@ function fireGrapple(){
 function updateTether(){
  if(!grappleActive||!grappleAnchor){tetherLine.visible=false;hookTip.visible=false;return;}
  const start=camera.position.clone().add(new THREE.Vector3(.42,-.48,-.5).applyQuaternion(camera.quaternion));
- const points=[];
+ const attribute=tetherLine.geometry.attributes.position;
  for(let i=0;i<=12;i++){
   const t=i/12,p=start.clone().lerp(grappleAnchor,t);
   p.y-=Math.sin(t*Math.PI)*.22;
-  points.push(p);
+  attribute.setXYZ(i,p.x,p.y,p.z);
  }
- tetherLine.geometry.dispose();tetherLine.geometry=new THREE.BufferGeometry().setFromPoints(points);
+ attribute.needsUpdate=true;
+ tetherLine.geometry.computeBoundingSphere();
  hookTip.position.copy(grappleAnchor);
 }
 function collectLoot(dt){
