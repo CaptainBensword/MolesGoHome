@@ -70,7 +70,7 @@ h1 span{display:block;color:var(--ice);letter-spacing:.01em}
   <div id="objective"><strong>City objective</strong><p>Restore the rooftop relay network. The skyline is your playground.</p><div id="relay-count"><em>0</em> / 5 RELAYS</div></div>
   <div id="crosshair"></div><div id="swing-hint">FIND AN ANCHOR · HOLD LEFT CLICK</div>
   <div id="speed-panel"><div id="speed">000</div><div id="speed-unit">KM/H</div></div>
-  <div id="controls"><b>W A S D</b> MOVE &nbsp; <b>SPACE</b> JUMP<br><b>HOLD CLICK</b> SWING &nbsp; <b>SHIFT</b> REEL IN<br><b>R</b> RESPAWN &nbsp; <b>ESC</b> PAUSE</div>
+  <div id="controls"><b>W A S D</b> MOVE &nbsp; <b>SPACE</b> JUMP<br><b>HOLD CLICK</b> ZIP &nbsp; <b>RELEASE</b> LAUNCH<br><b>R</b> RESPAWN &nbsp; <b>ESC</b> PAUSE</div>
   <div id="toast"></div>
 </div>
 <div id="menu">
@@ -184,52 +184,82 @@ const buildingTrim=mat(0x344b59,.6,.25);
 const roofMat=mat(0x3b4b54,.88,.12);
 const anchorGlow=mat(0x5fe7ff,.3,.25,0x25cfff,2.3);
 const anchorRingMat=new THREE.MeshBasicMaterial({color:0x66e8ff,transparent:true,opacity:.8});
-const anchorGeo=new THREE.SphereGeometry(.28,10,8);
+const anchorGeo=new THREE.SphereGeometry(.42,12,10);
 const targetGeo=new THREE.SphereGeometry(1.35,8,6);
 const targetMat=new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false});
 const antennaMat=mat(0x899ba4,.42,.6);
 const rooftopBoxMat=mat(0x45535b,.7,.22);
 
-function addBuilding(x,z,w,d,h){
- const facade=new THREE.MeshStandardMaterial({map:facadeTexture(buildings.length),roughness:.88,metalness:.08});
- const body=box(w,h,d,facade,x,h/2,z,true,true);
- const base=box(w+.5,.75,d+.5,buildingTrim,x,.38,z,true,true);
- const crown=box(w+.65,.7,d+.65,roofMat,x,h+.28,z,true,true);
- const roofBase=h+.64;
- if(rand()>.27){
-  const rw=2.4+rand()*3.1,rd=2.2+rand()*3;
-  box(rw,1.7,rd,rooftopBoxMat,x+(rand()-.5)*w*.42,roofBase+.85,z+(rand()-.5)*d*.42,true,true);
+function addBuilding(x,z,w,d,h,style='standard'){
+ const facade=new THREE.MeshStandardMaterial({map:facadeTexture(buildings.length),roughness:style==='glass'?.42:.88,metalness:style==='glass'?.38:.08});
+ if(style==='glass')facade.color.setHex(0xb7d8e7);
+ if(style==='artdeco')facade.color.setHex(0xd1b18a);
+ const tierPlan=style==='artdeco'?[{f:.13,s:.82},{f:.10,s:.66},{f:.08,s:.48},{f:.05,s:.30}]:
+                style==='needle'?[{f:.13,s:.78},{f:.09,s:.56},{f:.04,s:.34}]:
+                style==='glass'?[{f:.12,s:.78},{f:.08,s:.54}]:[];
+ const tierTotal=tierPlan.reduce((sum,t)=>sum+t.f,0);
+ const baseH=h*(1-tierTotal);
+ box(w,baseH,d,facade,x,baseH/2,z,true,true);
+ let level=baseH;
+ for(const tier of tierPlan){
+  const th=h*tier.f;
+  box(w*tier.s,th,d*tier.s,facade,x,level+th/2,z,true,true);
+  level+=th;
  }
- if(rand()>.55){
-  const antenna=new THREE.Mesh(new THREE.CylinderGeometry(.045,.09,3.5,6),antennaMat);
-  antenna.position.set(x+(rand()-.5)*w*.5,h+2.7,z+(rand()-.5)*d*.5);antenna.castShadow=true;scene.add(antenna);
+ const base=box(w+.8,.9,d+.8,buildingTrim,x,.45,z,true,true);
+ const crown=box(w+.9,.7,d+.9,roofMat,x,h+.32,z,true,true);
+ if(style==='artdeco'){
+  const deco=mat(0xc7a879,.42,.48);
+  for(const side of [-1,1]){
+   box(.32,h*.47,.34,deco,x+side*w*.39,h*.75,z-w*.28,true,true);
+   box(.32,h*.47,.34,deco,x+side*w*.39,h*.75,z+w*.28,true,true);
+  }
+  const mast=new THREE.Mesh(new THREE.CylinderGeometry(.07,.2,13,8),antennaMat);
+  mast.position.set(x,h+6.5,z);scene.add(mast);
+  const tip=new THREE.Mesh(new THREE.SphereGeometry(.42,10,8),lampMat);tip.position.set(x,h+13.2,z);scene.add(tip);
+ }else if(style==='needle'){
+  const mast=new THREE.Mesh(new THREE.CylinderGeometry(.025,.16,22,7),antennaMat);
+  mast.position.set(x,h+11,z);scene.add(mast);
+  const beacon=new THREE.Mesh(new THREE.SphereGeometry(.32,8,8),lampMat);beacon.position.set(x,h+21.7,z);scene.add(beacon);
+ }
+ if(style==='standard'&&rand()>.24){
+  const rw=4+rand()*4.5,rd=4+rand()*4.5;
+  box(rw,2.1,rd,rooftopBoxMat,x+(rand()-.5)*w*.34,h+1.37,z+(rand()-.5)*d*.34,true,true);
+ }
+ if(rand()>.46&&style==='standard'){
+  const antenna=new THREE.Mesh(new THREE.CylinderGeometry(.055,.11,4.5,7),antennaMat);
+  antenna.position.set(x+(rand()-.5)*w*.48,h+2.9,z+(rand()-.5)*d*.48);antenna.castShadow=true;scene.add(antenna);
  }
  buildings.push({x,z,w,d,h});
  const spots=[[-w*.43,-d*.43],[w*.43,-d*.43],[-w*.43,d*.43],[w*.43,d*.43]];
- const chosen=rand()>.4?[0,1,2,3]:[Math.floor(rand()*4),Math.floor(rand()*4)];
+ const chosen=h>115?[0,1,2,3]:(rand()>.45?[0,1,2,3]:[Math.floor(rand()*4),Math.floor(rand()*4)]);
  chosen.forEach((si,j)=>{
   if(j>0&&chosen[j]===chosen[0])return;
   const pt=new THREE.Vector3(x+spots[si][0],h+2.15,z+spots[si][1]);
   anchors.push(pt);
   const orb=new THREE.Mesh(anchorGeo,anchorGlow);orb.position.copy(pt);scene.add(orb);
-  const ring=new THREE.Mesh(new THREE.TorusGeometry(.48,.045,6,18),anchorRingMat);ring.position.copy(pt);ring.rotation.x=Math.PI/2;scene.add(ring);
-  const target=new THREE.Mesh(targetGeo,targetMat);target.position.copy(pt);scene.add(target);anchorTargets.push(target);
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(.72,.055,7,20),anchorRingMat);ring.position.copy(pt);ring.rotation.x=Math.PI/2;scene.add(ring);
  });
 }
 
-for(let ix=-4;ix<=4;ix++){
- for(let iz=-4;iz<=4;iz++){
+for(let ix=-5;ix<=5;ix++){
+ for(let iz=-5;iz<=5;iz++){
   const cx=ix*44+22,cz=iz*44+22;
   if(Math.abs(cx)<35&&Math.abs(cz)<58)continue;
-  const mainW=13+rand()*7,mainD=13+rand()*7,mainH=22+rand()*65;
-  const bx=cx+(rand()-.5)*5,bz=cz+(rand()-.5)*5;
-  addBuilding(bx,bz,mainW,mainD,mainH);
-  if(rand()>.68){
-   const sx=cx+(rand()>.5?1:-1)*9,sz=cz+(rand()-.5)*13;
-   addBuilding(sx,sz,7+rand()*3,8+rand()*4,13+rand()*25);
-  }
+  const bx=cx+(rand()-.5)*4,bz=cz+(rand()-.5)*4;
+  const landmark=(ix===-2&&iz===-4)||(ix===2&&iz===-4)||(ix===4&&iz===1)||(ix===-4&&iz===2);
+  let style='standard';
+  if(landmark)style=(ix===2&&iz===-4)?'glass':((ix===-4&&iz===2)?'needle':'artdeco');
+  else if(rand()<.25)style='glass';
+  else if(rand()<.12)style='needle';
+  const mainW=landmark?31+rand()*5:22+rand()*9;
+  const mainD=landmark?31+rand()*5:22+rand()*9;
+  const mainH=landmark?145+rand()*48:38+rand()*76;
+  addBuilding(bx,bz,mainW,mainD,mainH,style);
  }
 }
+
+// The street furniture gives the avenues a readable scale.
 
 // The street furniture gives the avenues a readable scale.
 const poleMat=mat(0x273d4a,.55,.65);
@@ -315,14 +345,12 @@ const trailGeometry=new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(
 const trail=new THREE.Line(trailGeometry,trailMaterial);trail.visible=false;scene.add(trail);
 
 const player={pos:new THREE.Vector3(0,.15,28),vel:new THREE.Vector3(),grounded:true};
-let yaw=0,pitch=.12,mode='menu',grappling=false,swingPoint=null,ropeLength=0;
-let collected=0,lastToast=0,toastTimer=0;
+let yaw=0,pitch=.04,mode='menu',grappling=false,swingPoint=null,zipDestination=null;
+let collected=0,toastTimer=0;
 const keys={};
 let mouseDown=false;
 const clock=new THREE.Clock();
-const raycaster=new THREE.Raycaster();
-const centerAim=new THREE.Vector2(0,0);
-const tmpA=new THREE.Vector3(),tmpB=new THREE.Vector3(),tmpC=new THREE.Vector3();
+const tmpA=new THREE.Vector3(),tmpB=new THREE.Vector3();
 const buildingsNear=buildings;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 function showToast(message){
@@ -333,17 +361,19 @@ function updateRelayUI(){
 }
 function resetRun(){
  player.pos.set(0,.15,28);player.vel.set(0,0,0);player.grounded=true;
- yaw=0;pitch=.12;grappling=false;swingPoint=null;rope.visible=false;trail.visible=false;
+ yaw=0;pitch=.04;grappling=false;swingPoint=null;zipDestination=null;mouseDown=false;
+ rope.visible=false;trail.visible=false;
  collected=0;relays.forEach(r=>{r.collected=false;r.group.visible=true;});
- updateRelayUI();hero.position.copy(player.pos);camera.position.set(0,5,39);
+ updateRelayUI();hero.position.copy(player.pos);hero.visible=false;
+ updateCamera(0);
 }
 function startRun(){
  mode='game';menu.classList.add('hidden');pauseScreen.classList.add('hidden');hud.classList.add('show');
  resetRun();canvas.requestPointerLock?.();
 }
 function pauseRun(){
- if(mode!=='game')return;mode='pause';grappling=false;rope.visible=false;trail.visible=false;
- pauseScreen.classList.remove('hidden');hud.classList.remove('show');
+ if(mode!=='game')return;mode='pause';grappling=false;swingPoint=null;zipDestination=null;rope.visible=false;trail.visible=false;
+ mouseDown=false;pauseScreen.classList.remove('hidden');hud.classList.remove('show');
  if(document.pointerLockElement)document.exitPointerLock();
 }
 function resumeRun(){
@@ -351,56 +381,75 @@ function resumeRun(){
  canvas.requestPointerLock?.();
 }
 function respawn(){
- player.pos.set(0,.15,28);player.vel.set(0,0,0);player.grounded=true;grappling=false;swingPoint=null;
- rope.visible=false;trail.visible=false;showToast('Back on the rooftops');
+ player.pos.set(0,.15,28);player.vel.set(0,0,0);player.grounded=true;grappling=false;swingPoint=null;zipDestination=null;
+ rope.visible=false;trail.visible=false;showToast('Back on the rooftops');updateCamera(0);
 }
 function attemptGrapple(){
  if(mode!=='game'||grappling)return;
- camera.updateMatrixWorld();
- raycaster.setFromCamera(centerAim,camera);
- const hits=raycaster.intersectObjects(anchorTargets,false);
- let target=null;
- if(hits.length&&hits[0].distance<105)target=hits[0].object.position.clone();
- if(!target){
-  const origin=camera.position;
-  const dir=new THREE.Vector3();camera.getWorldDirection(dir);
-  let best=Infinity;
-  for(const a of anchors){
-   const to=tmpA.copy(a).sub(origin);const dist=to.length();if(dist>95)continue;
-   const angle=dir.angleTo(to.normalize());
-   const score=angle*80+dist*.006;
-   if(angle<.23&&score<best){best=score;target=a.clone();}
-  }
+ camera.updateMatrixWorld(true);
+ const origin=camera.position;
+ const direction=new THREE.Vector3();camera.getWorldDirection(direction);
+ let target=null,bestScore=Infinity;
+ const range=310;
+ for(const anchor of anchors){
+  const to=tmpA.copy(anchor).sub(origin);
+  const distance=to.length();
+  if(distance<5||distance>range)continue;
+  const dot=direction.dot(to.normalize());
+  if(dot<.28)continue;
+  const angle=Math.acos(clamp(dot,-1,1));
+  if(angle>.86)continue;
+  const score=distance+angle*115;
+  if(score<bestScore){bestScore=score;target=anchor.clone();}
  }
- if(target){
-  swingPoint=target;ropeLength=clamp(player.pos.distanceTo(target),7,95);grappling=true;
-  showToast('Line attached');
- }else showToast('No anchor in range');
+ if(!target){showToast('No rooftop anchor in range');return;}
+ swingPoint=target;
+ zipDestination=target.clone().add(new THREE.Vector3(0,-2.15,0));
+ grappling=true;player.grounded=false;
+ showToast('Anchor locked · zip incoming');
 }
-function releaseGrapple(){grappling=false;swingPoint=null;rope.visible=false;trail.visible=false;}
+function releaseGrapple(){
+ if(!grappling)return;
+ grappling=false;swingPoint=null;zipDestination=null;
+ rope.visible=false;trail.visible=false;
+}
 document.getElementById('start').addEventListener('click',startRun);
 document.getElementById('resume').addEventListener('click',resumeRun);
 document.getElementById('restart').addEventListener('click',()=>{resetRun();resumeRun();});
-document.getElementById('how').addEventListener('click',()=>{document.querySelector('.menu-sub').textContent='WASD or arrow keys to move · Space to jump · Hold left click to attach and swing · Shift to reel in. Aim at a glowing rooftop anchor.';document.querySelector('.menu-note').textContent='Esc pauses · R respawns · Collect all five glowing relays';});
-canvas.addEventListener('click',()=>{if(mode==='game'&&!document.pointerLockElement)canvas.requestPointerLock?.();});
-canvas.addEventListener('mousedown',e=>{if(e.button!==0)return;mouseDown=true;if(mode==='game'){if(!document.pointerLockElement)canvas.requestPointerLock?.();else attemptGrapple();}});
-addEventListener('mouseup',e=>{if(e.button===0){mouseDown=false;releaseGrapple();}});
+document.getElementById('how').addEventListener('click',()=>{
+ document.querySelector('.menu-sub').textContent='WASD to run · Space to jump · Click and hold to zip toward the closest rooftop anchor in front of you · Release to launch away. Shift no longer slows your run.';
+ document.querySelector('.menu-note').textContent='Esc pauses · R respawns · Find all five rooftop relays';
+});
+canvas.addEventListener('mousedown',e=>{
+ if(e.button!==0||mode!=='game')return;
+ mouseDown=true;
+ if(!document.pointerLockElement)canvas.requestPointerLock?.();
+ else attemptGrapple();
+});
+addEventListener('mouseup',e=>{
+ if(e.button!==0)return;
+ mouseDown=false;
+ if(grappling)releaseGrapple();
+});
 addEventListener('keydown',e=>{
  keys[e.code]=true;
  if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
- if(e.code==='Escape'&&mode==='game'){pauseRun();}
+ if(e.code==='Escape'&&mode==='game')pauseRun();
  if(e.code==='KeyR'&&mode==='game')respawn();
- if(e.code==='Space'&&mode==='game'&&player.grounded){player.vel.y=10.7;player.grounded=false;}
 });
 addEventListener('keyup',e=>{keys[e.code]=false;});
 addEventListener('mousemove',e=>{
  if(!document.pointerLockElement||mode!=='game')return;
- yaw-=e.movementX*.00225;pitch=clamp(pitch-e.movementY*.0018,-.18,.58);
+ yaw-=e.movementX*.00235;
+ pitch=clamp(pitch-e.movementY*.00205,-.72,.86);
 });
 document.addEventListener('pointerlockchange',()=>{
  if(mode==='game'&&!document.pointerLockElement)pauseRun();
+ else if(mode==='game'&&document.pointerLockElement&&mouseDown&&!grappling)attemptGrapple();
 });
 document.addEventListener('visibilitychange',()=>{if(document.hidden&&mode==='game')pauseRun();});
+
+function collideBuildings(previousY){
 
 function collideBuildings(previousY){
  player.grounded=false;
@@ -408,8 +457,8 @@ function collideBuildings(previousY){
   const dx=player.pos.x-b.x,dz=player.pos.z-b.z;
   const insideX=Math.abs(dx)<b.w/2+.58,insideZ=Math.abs(dz)<b.d/2+.58;
   if(!insideX||!insideZ)continue;
-  if(previousY>=b.h-.05&&player.pos.y<=b.h&&player.vel.y<=0){
-   player.pos.y=b.h;player.vel.y=0;player.grounded=true;grappling=false;swingPoint=null;rope.visible=false;continue;
+  if(previousY>=b.h-.85&&player.pos.y<=b.h&&player.vel.y<=0){
+   player.pos.y=b.h;player.vel.y=0;player.grounded=true;releaseGrapple();continue;
   }
   if(player.pos.y<b.h-.15){
    const pushX=b.w/2+.62-Math.abs(dx),pushZ=b.d/2+.62-Math.abs(dz);
@@ -429,35 +478,56 @@ function updatePlayer(dt){
  if(keys.KeyD||keys.ArrowRight)move.add(right);
  if(keys.KeyA||keys.ArrowLeft)move.sub(right);
  if(move.lengthSq()>0)move.normalize();
- const accel=player.grounded?31:13;
- player.vel.x+=move.x*accel*dt;player.vel.z+=move.z*accel*dt;
- if(player.grounded){player.vel.x*=Math.pow(.80,dt*60);player.vel.z*=Math.pow(.80,dt*60);}
- else{player.vel.x*=Math.pow(.995,dt*60);player.vel.z*=Math.pow(.995,dt*60);}
- if(keys.Space&&player.grounded){player.vel.y=10.7;player.grounded=false;}
- player.vel.y-=24*dt;
- if(grappling&&swingPoint){
-  if(keys.ShiftLeft||keys.ShiftRight)ropeLength=Math.max(6,ropeLength-24*dt);
-  const toward=tmpB.copy(player.pos).sub(swingPoint);const distance=toward.length();
-  if(distance>ropeLength){
-   toward.normalize();player.pos.copy(swingPoint).addScaledVector(toward,ropeLength);
-   const radial=player.vel.dot(toward);
-   if(radial>0)player.vel.addScaledVector(toward,-radial);
+
+ if(grappling&&swingPoint&&zipDestination){
+  const ropeStart=camera.position.clone();
+  rope.geometry.setFromPoints([ropeStart,swingPoint]);rope.visible=true;
+  const toTarget=tmpB.copy(zipDestination).sub(player.pos);
+  const distance=toTarget.length();
+  const direction=toTarget.normalize();
+  const zipSpeed=clamp(62+distance*.12,62,108);
+  player.vel.copy(direction).multiplyScalar(zipSpeed);
+  const step=Math.min(distance,zipSpeed*dt);
+  player.pos.addScaledVector(direction,step);
+  if(distance<=step+.35){
+   player.pos.copy(zipDestination);
+   player.vel.copy(direction).multiplyScalar(34);
+   player.vel.y+=5.5;
+   releaseGrapple();
+   showToast('Zip complete · keep moving');
   }
-  if(move.lengthSq()>0){player.vel.addScaledVector(move,10*dt);}
+  trail.visible=false;
+ }else{
+  const acceleration=player.grounded?76:30;
+  if(move.lengthSq()>0){
+   player.vel.x+=move.x*acceleration*dt;
+   player.vel.z+=move.z*acceleration*dt;
+   const steerDrag=player.grounded ? .985 : .999;
+   player.vel.x*=Math.pow(steerDrag,dt*60);
+   player.vel.z*=Math.pow(steerDrag,dt*60);
+  }else if(player.grounded){
+   player.vel.x*=Math.pow(.88,dt*60);
+   player.vel.z*=Math.pow(.88,dt*60);
+  }else{
+   player.vel.x*=Math.pow(.998,dt*60);
+   player.vel.z*=Math.pow(.998,dt*60);
+  }
+  player.vel.y-=25.5*dt;
+  const horizontal=Math.hypot(player.vel.x,player.vel.z);
+  const maxSpeed=player.grounded?38:52;
+  if(horizontal>maxSpeed){const scale=maxSpeed/horizontal;player.vel.x*=scale;player.vel.z*=scale;}
+  const previousY=player.pos.y;
+  player.pos.addScaledVector(player.vel,dt);
+  collideBuildings(previousY);
+  rope.visible=false;trail.visible=false;
  }
- const horizontal=Math.hypot(player.vel.x,player.vel.z);
- if(horizontal>34){const s=34/horizontal;player.vel.x*=s;player.vel.z*=s;}
- const beforeY=player.pos.y;
- player.pos.addScaledVector(player.vel,dt);
- collideBuildings(beforeY);
  if(player.pos.y<-32)respawn();
- if(grappling&&swingPoint&&mouseDown){
-  const start=player.pos.clone().add(new THREE.Vector3(0,1.55,0));
-  rope.geometry.setFromPoints([start,swingPoint]);rope.visible=true;
-  const back=player.pos.clone().addScaledVector(new THREE.Vector3(player.vel.x,0,player.vel.z),-.42);
-  trail.geometry.setFromPoints([start,back]);trail.visible=horizontal>8;
- }else{rope.visible=false;trail.visible=false;}
+ if(grappling&&swingPoint){
+  rope.geometry.setFromPoints([camera.position,swingPoint]);rope.visible=true;
+ }
 }
+
+function updateHero(dt,time){
 
 function updateHero(dt,time){
  hero.position.copy(player.pos);
@@ -474,14 +544,19 @@ function updateHero(dt,time){
 }
 
 function updateCamera(dt){
- const forward=new THREE.Vector3(Math.sin(yaw),0,-Math.cos(yaw));
- const target=new THREE.Vector3(player.pos.x,player.pos.y+1.7,player.pos.z);
- const desired=target.clone().addScaledVector(forward,-10.5);
- desired.y+=4.4-pitch*2.2;
- camera.position.lerp(desired,1-Math.pow(.0008,dt));
- const look=target.clone().addScaledVector(forward,18);look.y+=pitch*22;
- camera.lookAt(look);
+ const speed=Math.hypot(player.vel.x,player.vel.z);
+ const bob=player.grounded?Math.sin(clock.elapsedTime*(5+speed*.24))*.025*Math.min(1,speed/12):0;
+ camera.position.set(player.pos.x,player.pos.y+1.68+bob,player.pos.z);
+ const lookDirection=new THREE.Vector3(
+  Math.sin(yaw)*Math.cos(pitch),
+  Math.sin(pitch),
+  -Math.cos(yaw)*Math.cos(pitch)
+ );
+ camera.lookAt(camera.position.clone().addScaledVector(lookDirection,100));
+ camera.updateMatrixWorld(true);
 }
+
+function updateRelays(dt,time){
 
 function updateRelays(dt,time){
  for(const r of relays){
@@ -490,7 +565,7 @@ function updateRelays(dt,time){
    r.core.rotation.x+=dt*1.2;
    r.ring1.rotation.z+=dt*.7;r.ring2.rotation.x+=dt*.42;
    r.group.position.y=r.baseY+Math.sin(time*1.5+r.group.position.x)*.22;
-   if(player.pos.distanceTo(r.group.position)<3.1){
+   if(player.pos.distanceTo(r.group.position)<5.4){
     r.collected=true;r.group.visible=false;collected++;updateRelayUI();
     showToast(collected===5?'NETWORK RESTORED':'Relay recovered · '+collected+' / 5');
    }
@@ -502,15 +577,19 @@ function updateHUD(){
  const kmh=Math.round(speed*7.2);
  speedEl.textContent=String(kmh).padStart(3,'0');
  momentumEl.innerHTML=kmh+'<span>KM/H</span>';
- swingHint.textContent=grappling?'LINE ATTACHED · RELEASE TO FLY':'FIND AN ANCHOR · HOLD LEFT CLICK';
+ swingHint.textContent=grappling?'ZIP LINE ACTIVE · RELEASE TO LAUNCH':'CLICK & HOLD · ZIP TO THE CLOSEST ANCHOR';
 }
 function animate(){
  requestAnimationFrame(animate);
  const dt=Math.min(clock.getDelta(),.033),time=clock.elapsedTime;
  if(mode==='game'){
-  updatePlayer(dt);updateHero(dt,time);updateCamera(dt);updateRelays(dt,time);updateHUD();
+  hero.visible=false;
+  updatePlayer(dt);updateCamera(dt);updateRelays(dt,time);updateHUD();
   if(toastTimer>0){toastTimer-=dt;if(toastTimer<=0)toastEl.classList.remove('show');}
+ }else if(mode==='pause'){
+  hero.visible=false;
  }else{
+  hero.visible=true;
   const drift=time*.035;
   camera.position.lerp(new THREE.Vector3(20+Math.sin(drift)*12,27+Math.sin(time*.16)*2,58+Math.cos(drift)*10),.015);
   camera.lookAt(0,22,-42);hero.position.set(0,0,28);hero.rotation.y=Math.sin(time*.35)*.16;
@@ -519,6 +598,7 @@ function animate(){
  }
  renderer.render(scene,camera);
 }
+
 animate();
 
 addEventListener('resize',()=>{
