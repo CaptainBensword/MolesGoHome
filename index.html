@@ -117,16 +117,77 @@ input[type=range]{width:100%;accent-color:#c79b5c}
  #drawer{padding:5vh 26px}
  #world-label{left:16px;top:18px}
 }
+
+.menu-copy{width:min(900px,78vw);padding-top:0}
+h1{font-size:clamp(64px,9.4vw,142px);line-height:.91;letter-spacing:.015em;margin:0 0 28px}
+.subtitle{font-size:14px;max-width:380px;margin:0 0 30px;color:#d5d1c5}
+.corner,.menu-bottom{display:none}
+#shade{background:linear-gradient(90deg,rgba(5,9,8,.65),rgba(5,9,8,.23) 52%,rgba(5,9,8,.04)),linear-gradient(0deg,rgba(5,9,8,.24),transparent 40%,rgba(5,9,8,.08))}
+#story{background:rgba(2,4,4,.38)}
+#story:before{background:linear-gradient(90deg,rgba(0,0,0,.52),transparent 25%,transparent 75%,rgba(0,0,0,.48)),linear-gradient(0deg,rgba(0,0,0,.28),transparent 32%,rgba(0,0,0,.15))}
+.story-mist{opacity:.1;filter:blur(60px)}
+.story-copy{font-size:clamp(18px,2vw,24px);line-height:1.75;min-height:170px}
+#world-label{top:25px;left:30px}
+#world-label b{font-size:13px;letter-spacing:.22em}
+#world-label small{color:#ddd0af}
+#crosshair{width:5px;height:5px;opacity:.65}
+#health-panel{position:absolute;left:28px;bottom:30px;width:210px;padding:13px 15px;background:rgba(11,16,14,.68);border:1px solid rgba(210,195,156,.23);backdrop-filter:blur(8px);border-radius:5px}
+.hud-label{display:flex;justify-content:space-between;gap:14px;color:#e9e4d8;font-size:9px;letter-spacing:.17em}
+.hud-label span:last-child{color:#c8bd9e;font-variant-numeric:tabular-nums}
+.health-track{height:5px;margin-top:9px;background:#493b37;overflow:hidden;border-radius:8px}
+.health-fill{height:100%;width:100%;background:linear-gradient(90deg,#8e3835,#d46b55);transition:width .2s}
+#hotbar-wrap{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);width:min(390px,56vw);pointer-events:auto}
+.progress-row{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;margin:0 2px 9px;color:#f1e9d8;font-size:9px;letter-spacing:.13em}
+#level-label{white-space:nowrap;color:#e7d2a8}
+.xp-track{height:4px;background:#3d403a;overflow:hidden;border-radius:8px}
+#xp-fill{height:100%;width:0;background:linear-gradient(90deg,#a8884d,#e5cc8c);transition:width .2s}
+#xp-value{white-space:nowrap;color:#c8c1ad;font-variant-numeric:tabular-nums}
+#hotbar{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.hotbar-slot{height:58px;position:relative;background:rgba(12,17,15,.72);border:1px solid rgba(210,195,156,.35);border-radius:4px;color:#c9c1b0;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.hotbar-slot.selected{border-color:#e5cb91;box-shadow:0 0 0 1px rgba(229,203,145,.35),0 0 18px rgba(229,203,145,.14);background:rgba(78,66,45,.52)}
+.hotbar-slot .slot-number{position:absolute;top:5px;left:7px;font-size:9px;color:#c9b98e}
+.hotbar-slot .slot-empty{font-size:9px;letter-spacing:.12em;color:#797a70}
+#clock-display{position:absolute;right:28px;top:26px;color:#e4ddcb;font-size:10px;letter-spacing:.18em;text-shadow:0 2px 8px #000}
+#interact-prompt{position:absolute;left:50%;bottom:112px;transform:translateX(-50%);display:none;padding:9px 14px;background:rgba(9,14,12,.76);border:1px solid rgba(213,190,140,.45);color:#eee4d0;font-size:10px;letter-spacing:.12em;white-space:nowrap}
+#ghost-guide{position:fixed;z-index:5;left:50%;bottom:116px;transform:translateX(-50%);width:min(520px,88vw);display:none;padding:17px 20px;background:linear-gradient(110deg,rgba(11,18,18,.91),rgba(18,24,23,.83));border:1px solid rgba(173,204,203,.4);box-shadow:0 14px 45px #0007;backdrop-filter:blur(10px);pointer-events:none}
+#ghost-guide.show{display:block}
+.guide-speaker{font-size:9px;color:#a9d2d0;letter-spacing:.25em;margin-bottom:8px}
+#guide-text{font:500 15px/1.6 Cinzel,Georgia,serif;color:#eee9dc}
+.guide-next{margin-top:10px;text-align:right;font-size:9px;color:#aebbb5;letter-spacing:.15em}
+#inventory-screen{position:fixed;z-index:8;inset:0;display:none;align-items:center;justify-content:center;padding:4vh 4vw;background:rgba(3,6,5,.74);backdrop-filter:blur(12px)}
+#inventory-screen.open{display:flex}
+#inventory-card{width:min(900px,96vw);max-height:90vh;overflow:auto;background:linear-gradient(145deg,rgba(24,31,27,.98),rgba(9,14,12,.98));border:1px solid rgba(201,177,126,.48);box-shadow:0 25px 90px #000a;padding:28px}
+.inventory-head{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(201,177,126,.25);padding-bottom:18px;margin-bottom:22px}
+.inventory-head h2{font:600 26px Cinzel,Georgia,serif;color:#e9d5ac;letter-spacing:.14em;margin:0}
+.inventory-close{border:1px solid #99835e;background:transparent;color:#e9dfcb;width:36px;height:36px;font-size:20px;cursor:pointer}
+.inventory-layout{display:grid;grid-template-columns:240px 1fr;gap:26px}
+.inventory-stat{padding:14px 15px;border:1px solid rgba(201,177,126,.2);background:rgba(255,255,255,.025);margin-bottom:9px}
+.inventory-stat label{display:block;color:#a9a18f;font-size:9px;letter-spacing:.19em;margin-bottom:7px}
+.inventory-stat strong{font:600 23px Cinzel,Georgia,serif;color:#eee4d0}
+.inventory-stat small{display:block;color:#b6ad9a;font-size:10px;margin-top:4px}
+.inventory-section{font-size:10px;letter-spacing:.2em;color:#d7c39d;margin:4px 0 14px}
+#inventory-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.inventory-slot{aspect-ratio:1;background:rgba(255,255,255,.025);border:1px solid rgba(201,177,126,.22);border-radius:3px;position:relative;display:flex;align-items:center;justify-content:center;color:#77786f;font-size:9px;letter-spacing:.12em}
+.inventory-slot span{position:absolute;left:7px;top:6px;font-size:9px;color:#b39d72}
+.inventory-empty{margin-top:16px;color:#a9a395;font-size:11px;line-height:1.7}
+.inventory-footer{display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(201,177,126,.18);margin-top:22px;padding-top:15px;color:#a9a395;font-size:9px;letter-spacing:.13em}
+@media(max-width:650px){
+ .menu-copy{width:90vw} h1{font-size:clamp(54px,13vw,86px)}
+ #health-panel{left:10px;bottom:100px;width:158px;padding:10px}
+ #hotbar-wrap{width:calc(100vw - 24px);bottom:12px}
+ .hotbar-slot{height:49px} #clock-display{right:12px;top:16px}
+ #world-label{left:14px;top:16px} #ghost-guide{bottom:88px}
+ .inventory-layout{grid-template-columns:1fr} #inventory-grid{grid-template-columns:repeat(4,1fr)}
+ #inventory-card{padding:18px}
+}
 </style>
 </head>
 <body>
 <div id="shade"></div>
 <div id="menu">
- <div class="corner"><div class="talon-mark">TALON</div></div>
  <div class="menu-copy">
-  <div class="eyebrow">FIRST-PERSON ACTION ADVENTURE</div>
   <h1>THE LOST<br>FRONTIER</h1>
-  <p class="subtitle">A messenger wakes beyond the known roads, with no memory of the journey.</p>
+  <p class="subtitle">You were sent here. You do not remember why.</p>
   <div class="actions">
    <button class="action primary" id="play"><span class="mark">▶</span> Play</button>
    <button class="action" id="settings"><span class="mark">⚙</span> Settings</button>
@@ -134,7 +195,7 @@ input[type=range]{width:100%;accent-color:#c79b5c}
    <button class="action" id="credits"><span class="mark">✦</span> Credits</button>
   </div>
  </div>
- <div class="menu-bottom"><span>Build 0.3</span><span>TALON</span></div>
+
 </div>
 <aside id="drawer">
  <div class="drawer-top"><h2 id="drawer-title">Settings</h2><button class="close" id="drawer-close" aria-label="Close">×</button></div>
@@ -164,15 +225,32 @@ input[type=range]{width:100%;accent-color:#c79b5c}
 <div id="pause">
  <div class="pause-card">
   <h2 id="pause-title">THE RIDGELINE</h2>
-  <p id="pause-copy">You're on the hill above the valley. Press Enter the World to start moving.</p>
+  <p id="pause-copy">You wake on a mountain above the clouds. A small pale figure is waiting nearby.</p>
   <div class="pause-actions">
-   <button class="action primary" id="resume"><span class="mark">▶</span><span id="resume-label">Enter the world</span></button>
+   <button class="action primary" id="resume"><span class="mark">▶</span><span id="resume-label">Wake up</span></button>
    <button class="action" id="pause-settings"><span class="mark">⚙</span> Settings</button>
    <button class="action" id="leave"><span class="mark">↩</span> Return to title</button>
   </div>
  </div>
 </div>
-<div id="gamehud"><div id="world-label"><b>THE LOST FRONTIER</b><small>THE RIDGELINE</small></div><div id="crosshair"></div><div id="game-hint">CLICK TO LOOK AROUND &nbsp;·&nbsp; WASD TO MOVE &nbsp;·&nbsp; ESC TO PAUSE</div><div id="game-state">BUILD 0.2</div></div>
+<div id="gamehud">
+ <div id="world-label"><b>THE LOST FRONTIER</b><small>THE RIDGELINE</small></div><div id="clock-display">07:26 MORNING</div><div id="crosshair"></div>
+ <div id="health-panel"><div class="hud-label"><span>HEALTH</span><span id="health-value">100 / 100</span></div><div class="health-track"><div class="health-fill" id="health-fill"></div></div></div>
+ <div id="hotbar-wrap"><div class="progress-row"><span id="level-label">LEVEL 1</span><div class="xp-track"><div id="xp-fill"></div></div><span id="xp-value">0 / 100 XP</span></div>
+ <div id="hotbar"><button class="hotbar-slot selected" data-slot="0"><span class="slot-number">1</span><span class="slot-empty">—</span></button><button class="hotbar-slot" data-slot="1"><span class="slot-number">2</span><span class="slot-empty">—</span></button><button class="hotbar-slot" data-slot="2"><span class="slot-number">3</span><span class="slot-empty">—</span></button><button class="hotbar-slot" data-slot="3"><span class="slot-number">4</span><span class="slot-empty">—</span></button><button class="hotbar-slot" data-slot="4"><span class="slot-number">5</span><span class="slot-empty">—</span></button></div></div>
+ <div id="interact-prompt">E — TALK</div>
+</div>
+<div id="ghost-guide"><div class="guide-speaker">A VOICE NEARBY</div><div id="guide-text"></div><div class="guide-next">E / ENTER &nbsp; CONTINUE</div></div>
+<div id="inventory-screen"><div id="inventory-card">
+ <div class="inventory-head"><h2>SATCHEL</h2><button id="inventory-close" class="inventory-close">×</button></div>
+ <div class="inventory-layout"><aside>
+  <div class="inventory-stat"><label>LEVEL</label><strong id="inv-level">1</strong><small>Current level</small></div>
+  <div class="inventory-stat"><label>EXPERIENCE</label><strong id="inv-xp">0 / 100</strong><small>Experience points</small></div>
+  <div class="inventory-stat"><label>HEALTH</label><strong id="inv-health">100 / 100</strong><small>Current vitality</small></div>
+  <p class="inventory-empty">Your satchel is empty. Anything you find will be kept here.</p>
+ </aside><main><div class="inventory-section">ITEMS</div><div id="inventory-grid"></div></main></div>
+ <div class="inventory-footer"><span>THE LOST FRONTIER</span><span>I / ESC TO CLOSE</span></div>
+</div></div>
 <div id="toast"></div><div id="fade"></div>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js';
@@ -204,12 +282,13 @@ const fill=new THREE.DirectionalLight(0xb2c7d1,.55);fill.position.set(55,35,-80)
 const standard=(color,roughness=1,metalness=0)=>new THREE.MeshStandardMaterial({color,roughness,metalness});
 const groundMat=new THREE.MeshStandardMaterial({vertexColors:true,roughness:1});
 function heightAt(x,z){
- const hill=10.8*Math.exp(-((x*x)/(2*34*34)+(Math.pow(z-17,2))/(2*30*30)));
- const farHill=5.5*Math.exp(-((Math.pow(x+62,2))/(2*36*36)+(Math.pow(z+64,2))/(2*32*32)));
- const rightHill=6.2*Math.exp(-((Math.pow(x-78,2))/(2*43*43)+(Math.pow(z+35,2))/(2*38*38)));
- const low=2.2*Math.sin(x*.018+z*.012)+1.4*Math.cos(z*.026-x*.011)+.8*Math.sin((x+z)*.048);
- const valley=-2.6*Math.exp(-(x*x)/(2*17*17))*Math.exp(-Math.pow(z+38,2)/(2*48*48));
- return hill+farHill+rightHill+low+valley;
+ const summit=28*Math.exp(-((x*x)/(2*56*56)+(Math.pow(z-20,2))/(2*66*66)));
+ const westRidge=24*Math.exp(-((Math.pow(x+82,2))/(2*38*38)+(Math.pow(z+72,2))/(2*54*54)));
+ const eastRidge=22*Math.exp(-((Math.pow(x-88,2))/(2*42*42)+(Math.pow(z+60,2))/(2*58*58)));
+ const farSpine=13*Math.exp(-((Math.pow(x+8,2))/(2*94*94)+(Math.pow(z+132,2))/(2*34*34)));
+ const slope=2.1*Math.sin(x*.018+z*.012)+1.2*Math.cos(z*.026-x*.011)+.65*Math.sin((x+z)*.048);
+ const valley=-7*Math.exp(-(x*x)/(2*20*20))*Math.exp(-Math.pow(z+44,2)/(2*55*55));
+ return summit+westRidge+eastRidge+farSpine+slope+valley;
 }
 const terrainGeo=new THREE.PlaneGeometry(360,360,190,190);
 const pos=terrainGeo.attributes.position;
@@ -248,14 +327,16 @@ const trunkMat=standard(0x514233),leafMats=[standard(0x294b3d),standard(0x365a43
 const trunkGeo=new THREE.CylinderGeometry(.2,.31,2.8,7);
 const crownGeos=[new THREE.ConeGeometry(2.15,3.3,7),new THREE.ConeGeometry(1.72,3.0,7),new THREE.ConeGeometry(1.23,2.5,7)];
 const treeData=[];
-for(let i=0;i<330;i++){
- const x=(rand(i*4+1)-.5)*270,z=(rand(i*4+2)-.5)*270;
- if(Math.hypot(x,z-17)<29)continue;
- const roadX=Math.sin(((8-z)/156)*4.2)*4.5-1.5;
- if(z<12&&z>-150&&Math.abs(x-roadX)<7)continue;
- const s=.68+rand(i*4+3)*.78;
- treeData.push({x,z,s,y:heightAt(x,z)});
-}
+const treePatches=[{x:-76,z:-36,r:23,count:34},{x:78,z:-43,r:25,count:38},{x:-118,z:-112,r:29,count:42},{x:112,z:-121,r:30,count:42},{x:-43,z:-139,r:18,count:18},{x:49,z:-146,r:20,count:20}];
+treePatches.forEach((patch,p)=>{
+ for(let j=0;j<patch.count;j++){
+  const a=rand((p+1)*1000+j)*Math.PI*2,r=Math.sqrt(rand((p+1)*2000+j))*patch.r;
+  const x=patch.x+Math.cos(a)*r,z=patch.z+Math.sin(a)*r;
+  const roadX=Math.sin(((8-z)/156)*4.2)*4.5-1.5;
+  if(z<12&&z>-150&&Math.abs(x-roadX)<8)continue;
+  const s=.78+rand((p+1)*3000+j)*.66;treeData.push({x,z,s,y:heightAt(x,z)});
+ }
+});
 function rand(n){const v=Math.sin(n*127.1+311.7)*43758.5453;return v-Math.floor(v);}
 function instanced(geo,material,data,makeTransform){
  const mesh=new THREE.InstancedMesh(geo,material,data.length);const dummy=new THREE.Object3D();
@@ -265,36 +346,60 @@ function instanced(geo,material,data,makeTransform){
 instanced(trunkGeo,trunkMat,treeData,(o,d)=>{o.position.set(d.x,d.y+1.4*d.s,d.z);o.scale.setScalar(d.s);o.rotation.y=rand(Math.round(d.x*13+d.z*7))*6.28;});
 crownGeos.forEach((geo,t)=>instanced(geo,leafMats[t],treeData,(o,d)=>{o.position.set(d.x,d.y+(2.55+t*.91)*d.s,d.z);o.scale.setScalar(d.s);o.rotation.y=rand(Math.round(d.x*5+d.z*11+t))*6.28;}));
 
-const rockGeo=new THREE.DodecahedronGeometry(1,0),rockMat=standard(0x77786b);
-const rocks=[];
-for(let i=0;i<155;i++){const x=(rand(i+800)-.5)*245,z=(rand(i+1100)-.5)*245;if(Math.hypot(x,z-17)<23)continue;const s=.45+rand(i+1400)*1.7;rocks.push({x,z,s,y:heightAt(x,z)});}
-instanced(rockGeo,rockMat,rocks,(o,d)=>{o.position.set(d.x,d.y+d.s*.34,d.z);o.scale.set(d.s,d.s*.68,d.s*.82);o.rotation.set(rand(d.x+33)*.5,rand(d.z+55)*6,rand(d.x+d.z)*.4);});
 
-// A weathered gateway on the far ridge, with a small ember-lit marker.
-const stone=standard(0x777566),darkStone=standard(0x4b5147),amber=standard(0xd6a85e,.4,.25);
-function block(x,y,z,sx,sy,sz,material,ry=0){
- const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),material);m.position.set(x,y,z);m.rotation.y=ry;m.castShadow=true;m.receiveShadow=true;scene.add(m);return m;
+// Distant mountain faces frame the valley.
+const rockFaces=[standard(0x535c58),standard(0x626a64),standard(0x46514d)],snowMat=standard(0xb7b9ad);
+function mountainPeak(x,z,radius,height,material,seed){
+ const base=heightAt(x,z),peak=new THREE.Mesh(new THREE.ConeGeometry(radius,height,7,2),material);
+ peak.position.set(x,base+height*.48,z);peak.rotation.y=seed*.7;peak.castShadow=true;peak.receiveShadow=true;scene.add(peak);
+ const cap=new THREE.Mesh(new THREE.ConeGeometry(radius*.31,height*.16,7,1),snowMat);
+ cap.position.set(x,base+height*.87,z);cap.rotation.y=seed*.7;scene.add(cap);
 }
-const gx=4,gz=-105,gy=heightAt(gx,gz);
-block(gx-5,gy+4,gz,2.1,8,2.4,stone,-.08);block(gx+5,gy+4.8,gz,2.1,9.6,2.4,stone,.06);
-block(gx,gy+9.1,gz,12,2,2.5,stone,-.02);
-block(gx-5.2,gy+8.7,gz,2.4,1.2,3,darkStone);block(gx+5.2,gy+9.4,gz,2.4,1.2,3,darkStone);
-const marker=new THREE.Mesh(new THREE.OctahedronGeometry(1.1,0),amber);marker.position.set(gx,gy+6.6,gz);scene.add(marker);
-const markerLight=new THREE.PointLight(0xffbd69,4,24);markerLight.position.copy(marker.position);scene.add(markerLight);
-for(let i=0;i<7;i++){const px=gx-2.5+i*.8,pz=gz-3.5;const peb=new THREE.Mesh(new THREE.DodecahedronGeometry(.48,0),darkStone);peb.position.set(px,gy+.4+rand(i)*.6,pz);peb.rotation.set(i*.3,i*.7,.2);peb.castShadow=true;scene.add(peb);}
+mountainPeak(-112,-151,43,82,rockFaces[0],1);mountainPeak(-54,-180,51,111,rockFaces[1],2);
+mountainPeak(18,-168,45,96,rockFaces[0],3);mountainPeak(94,-151,49,88,rockFaces[2],4);
+const cloudMat=new THREE.MeshBasicMaterial({color:0xd5dfdc,transparent:true,opacity:.15,depthWrite:false}),clouds=[];
+function makeCloud(x,y,z,s){
+ const group=new THREE.Group();
+ for(let i=0;i<5;i++){const puff=new THREE.Mesh(new THREE.SphereGeometry(1,12,9),cloudMat);puff.position.set((i-2)*.7,Math.sin(i*1.7)*.16,Math.cos(i*1.2)*.2);puff.scale.set(2.8*s,1.05*s,1.4*s);group.add(puff);}
+ group.position.set(x,y,z);scene.add(group);clouds.push(group);
+}
+makeCloud(-62,47,-42,1.3);makeCloud(48,55,-74,1.1);makeCloud(110,48,-121,1.6);
+makeCloud(-132,59,-142,1.25);makeCloud(12,64,-164,1.4);
 
-// Camera-mounted grapple-spike silhouette: a visual placeholder for the game's signature tool.
-const weapon=new THREE.Group();
-const shaft=new THREE.Mesh(new THREE.CylinderGeometry(.035,.055,.82,8),standard(0x333b3b,.38,.72));shaft.position.y=-.04;weapon.add(shaft);
-const grip=new THREE.Mesh(new THREE.CylinderGeometry(.065,.065,.27,8),standard(0x713d30,.8));grip.position.y=-.27;weapon.add(grip);
-const spike=new THREE.Mesh(new THREE.ConeGeometry(.105,.42,7),standard(0xc4c5ad,.28,.78));spike.position.y=.57;weapon.add(spike);
-const collar=new THREE.Mesh(new THREE.TorusGeometry(.09,.025,6,12),standard(0xb88a4c,.35,.6));collar.rotation.x=Math.PI/2;collar.position.y=.32;weapon.add(collar);
-const core=new THREE.Mesh(new THREE.SphereGeometry(.045,10,8),new THREE.MeshBasicMaterial({color:0xb74d39}));core.position.set(0,.13,0);weapon.add(core);
-weapon.position.set(.58,-.53,-.88);weapon.rotation.set(.17,0,-.48);camera.add(weapon);scene.add(camera);
-
-// Game state and first-person movement.
+// First-person traveler. No weapon equipped at the start.
 const player={x:0,z:17,y:heightAt(0,17),vy:0,grounded:true};
 let yaw=0,pitch=-.045,mode='menu',locked=false,moveSpeed=8;
+let health=100,maxHealth=100,experience=0,level=1,selectedSlot=0,inventoryOpen=false,guideActive=false,guideStarted=false;
+const inventoryItems=Array(20).fill(null),hotbarSlots=5;
+let timeOfDay=.31;
+const dayLength=600;
+const guidePages=[
+ 'There you are. I was beginning to think the mountain had swallowed you. Try moving with W, A, S and D. The mouse looks around.',
+ 'Careful near the edge. Space lets you jump. Give yourself room before you try it.',
+ 'Your satchel is still with you. Press I to open it. There is not much inside yet.',
+ 'I found you here. I did not see where you came from.'
+];
+
+const ghost=new THREE.Group();
+const ghostBodyMat=new THREE.MeshStandardMaterial({color:0xe3eeee,transparent:true,opacity:.91,roughness:.34,metalness:.04,emissive:0x577e80,emissiveIntensity:.25});
+const ghostTailMat=new THREE.MeshStandardMaterial({color:0xc8d9d8,transparent:true,opacity:.76,roughness:.42,emissive:0x456c70,emissiveIntensity:.2});
+const ghostBody=new THREE.Mesh(new THREE.SphereGeometry(.64,24,20),ghostBodyMat);ghostBody.scale.set(.78,1.06,.66);ghostBody.position.y=.38;ghost.add(ghostBody);
+const ghostTail=new THREE.Mesh(new THREE.ConeGeometry(.42,.86,18),ghostTailMat);ghostTail.position.y=-.55;ghostTail.rotation.x=Math.PI;ghost.add(ghostTail);
+const eyeMat=new THREE.MeshBasicMaterial({color:0x253538});
+for(const x of [-.18,.18]){const eye=new THREE.Mesh(new THREE.SphereGeometry(.055,10,8),eyeMat);eye.position.set(x,.47,.405);ghost.add(eye);}
+const ghostRing=new THREE.Mesh(new THREE.TorusGeometry(.63,.018,6,36),new THREE.MeshBasicMaterial({color:0x9fc7c4,transparent:true,opacity:.5}));
+ghostRing.rotation.x=Math.PI/2;ghostRing.position.y=-.03;ghost.add(ghostRing);
+const ghostLight=new THREE.PointLight(0x9bc8c7,1.7,13);ghostLight.position.set(0,.4,0);ghost.add(ghostLight);
+const motes=[];
+for(let i=0;i<4;i++){const mote=new THREE.Mesh(new THREE.SphereGeometry(.045,8,6),new THREE.MeshBasicMaterial({color:0xc1e2dc,transparent:true,opacity:.7}));ghost.add(mote);motes.push(mote);}
+ghost.position.set(0,heightAt(0,9)+2.1,9);scene.add(ghost);
+const sleeveMat=standard(0x34413d),skinMat=standard(0xb68f72),hands=new THREE.Group();
+function makeHand(side){
+ const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.105,.42,4,8),sleeveMat);arm.position.set(side*.42,-.53,-.78);arm.rotation.z=-side*.22;arm.rotation.x=-.16;hands.add(arm);
+ const hand=new THREE.Mesh(new THREE.SphereGeometry(.12,12,10),skinMat);hand.scale.set(.86,1.12,.78);hand.position.set(side*.43,-.78,-.76);hands.add(hand);
+}
+makeHand(-1);makeHand(1);hands.visible=false;camera.add(hands);scene.add(camera);
+
 const keys={};
 const settings={quality:'high',sensitivity:1,fov:76};
 function applySettings(){
