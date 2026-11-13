@@ -8,10 +8,11 @@ Open the GitHub Pages site after deployment. No build step is required. The game
 
 ## Controls
 
-- **WASD / Arrow keys** — move
+- **Mouse** — look around
+- **WASD / Arrow keys** — run
 - **Space** — jump
-- **Hold left mouse button** — attach to an anchor and swing
-- **Shift** — reel in while attached
+- **Hold left mouse button** — zip toward the closest rooftop anchor in front of you
+- **Release left mouse button** — launch away with your current momentum
 - **R** — respawn
 - **Esc** — pause
 
