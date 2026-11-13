@@ -383,19 +383,7 @@ groundTextureLoader.load(groundTextureURL,texture=>{
  });
 },undefined,()=>console.warn('Ground texture unavailable; using the terrain colour fallback.'));
 
-const pathMat=standard(0x897b5b);
-const pathPoints=[];
-for(let i=0;i<=90;i++){const t=i/90,z=8-t*148,x=Math.sin(t*4.2)*4.5-1.5;pathPoints.push(new THREE.Vector3(x,heightAt(x,z)+.055,z));}
-const pathVerts=[],pathIndices=[];
-for(let i=0;i<pathPoints.length;i++){
- const p=pathPoints[i],prev=pathPoints[Math.max(0,i-1)],next=pathPoints[Math.min(pathPoints.length-1,i+1)];
- const tangent=new THREE.Vector3().subVectors(next,prev).normalize();
- const side=new THREE.Vector3(-tangent.z,0,tangent.x).normalize();
- pathVerts.push(p.x+side.x*2.6,p.y+.015,p.z+side.z*2.6,p.x-side.x*2.6,p.y+.015,p.z-side.z*2.6);
- if(i<pathPoints.length-1){const a=i*2;pathIndices.push(a,a+1,a+2,a+1,a+3,a+2);}
-}
-const pg=new THREE.BufferGeometry();pg.setAttribute('position',new THREE.Float32BufferAttribute(pathVerts,3));pg.setIndex(pathIndices);pg.computeVertexNormals();
-const path=new THREE.Mesh(pg,new THREE.MeshStandardMaterial({color:0x928365,roughness:1,side:THREE.DoubleSide}));path.receiveShadow=true;scene.add(path);
+// The opening ridge is open ground, not a marked trail.
 
 // A distant warm sun gives the menu and hilltop a clear focal point.
 const sunDisc=new THREE.Mesh(new THREE.SphereGeometry(8,24,18),new THREE.MeshBasicMaterial({color:0xffe5b6}));
@@ -418,8 +406,7 @@ treePatches.forEach((patch,p)=>{
  for(let j=0;j<patch.count;j++){
   const a=rand((p+1)*1000+j)*Math.PI*2,r=Math.sqrt(rand((p+1)*2000+j))*patch.r;
   const x=patch.x+Math.cos(a)*r,z=patch.z+Math.sin(a)*r;
-  const roadX=Math.sin(((8-z)/156)*4.2)*4.5-1.5;
-  if(z<12&&z>-150&&Math.abs(x-roadX)<8)continue;
+  if(Math.hypot(x,z-24)<13)continue;
   const s=.78+rand((p+1)*3000+j)*.66;treeData.push({x,z,s,y:heightAt(x,z)});
  }
 });
@@ -476,6 +463,109 @@ function makeMountainRange(centerX,centerZ,width,depth,height,baseY,seed,near=fa
 makeMountainRange(-4,-228,560,44,112,-8,121,false);
 makeMountainRange(0,-312,680,60,172,-18,431,false);
 makeMountainRange(-14,-168,380,32,70,-4,77,true);
+
+// Floating islands above the ridge. Each luminous stone is a valid tether point.
+const grappleTargets=[],skyIslands=[],islandAnchors=[];
+const islandRock=standard(0x565d59,.94),islandGrass=standard(0x65775a,.98),islandStone=standard(0x777a70,.9);
+function makeSkyIsland(x,y,z,size,seed){
+ const root=new THREE.Group();root.position.set(x,y,z);
+ const cap=new THREE.Mesh(new THREE.CylinderGeometry(4.1*size,5.7*size,1.7*size,9,1),islandGrass);
+ cap.position.y=.05*size;cap.castShadow=true;cap.receiveShadow=true;root.add(cap);
+ const crown=new THREE.Mesh(new THREE.DodecahedronGeometry(4.7*size,1),islandRock);
+ crown.scale.set(1.18,.78,.95);crown.position.y=-.42*size;crown.castShadow=true;crown.receiveShadow=true;root.add(crown);
+ for(let i=0;i<5;i++){
+  const a=i*Math.PI*2/5+seed;
+  const shard=new THREE.Mesh(new THREE.ConeGeometry((.8+rand(seed+i)*.7)*size,(4+rand(seed+i*2)*3)*size,6),islandStone);
+  shard.position.set(Math.cos(a)*2.5*size,-3.2*size-rand(seed+i+20)*1.3*size,Math.sin(a)*2.2*size);
+  shard.rotation.z=Math.cos(a)*-.22;shard.rotation.x=Math.sin(a)*.22;shard.castShadow=true;root.add(shard);
+ }
+ for(let i=0;i<9;i++){
+  const tuft=new THREE.Mesh(new THREE.ConeGeometry(.38*size,.9*size,5),leafMats[i%leafMats.length]);
+  const angle=rand(seed+i*3)*Math.PI*2,r=rand(seed+i*5)*3.4*size;
+  tuft.position.set(Math.cos(angle)*r,.92*size,Math.sin(angle)*r);
+  tuft.rotation.z=(rand(seed+i*7)-.5)*.45;root.add(tuft);
+ }
+ const anchor=new THREE.Group();anchor.position.set(0,2.15*size,0);root.add(anchor);
+ const crystal=new THREE.Mesh(new THREE.OctahedronGeometry(.48*size,1),new THREE.MeshStandardMaterial({color:0x9ce1da,emissive:0x3f9b99,emissiveIntensity:1.25,metalness:.35,roughness:.22}));
+ crystal.rotation.y=.2;anchor.add(crystal);
+ const ring=new THREE.Mesh(new THREE.TorusGeometry(.82*size,.045*size,8,42),new THREE.MeshBasicMaterial({color:0x9be8df,transparent:true,opacity:.82}));
+ ring.rotation.x=Math.PI/2;anchor.add(ring);
+ const anchorLight=new THREE.PointLight(0x75d9d1,2.8,20*size);anchorLight.position.y=.25*size;anchor.add(anchorLight);
+ anchor.userData.grapplePoint=true;grappleTargets.push(anchor);islandAnchors.push(anchor);
+ root.userData.seed=seed;root.userData.baseY=y;scene.add(root);skyIslands.push(root);return root;
+}
+makeSkyIsland(-56,112,-52,1.15,4);
+makeSkyIsland(56,134,-128,1.42,12);
+makeSkyIsland(128,105,-32,.92,20);
+makeSkyIsland(-154,128,-188,.82,28);
+makeSkyIsland(5,168,-248,1.7,36);
+
+// A disturbed battlefield: collapsed carts, scorched earth, snapped timber and rubble.
+const rubbleGeo=new THREE.DodecahedronGeometry(1,0);
+const rubbleMats=[standard(0x686b62),standard(0x77766b),standard(0x4c514d),standard(0x8a806d)];
+for(let i=0;i<210;i++){
+ const angle=rand(i+2100)*Math.PI*2,r=13+Math.sqrt(rand(i+2800))*67;
+ const x=Math.cos(angle)*r,z=24+Math.sin(angle)*r;
+ if(Math.hypot(x,z-24)<10)continue;
+ const size=.22+rand(i+3500)*1.18,mesh=new THREE.Mesh(rubbleGeo,rubbleMats[i%rubbleMats.length]);
+ mesh.position.set(x,heightAt(x,z)+size*.27,z);mesh.scale.set(size*1.15,size*.62,size*.9);
+ mesh.rotation.set(rand(i+4100)*.6,rand(i+4200)*6.28,rand(i+4300)*.5);
+ mesh.castShadow=true;mesh.receiveShadow=true;scene.add(mesh);
+}
+const charredWood=standard(0x342b25),weatheredWood=standard(0x65503b),burntMetal=standard(0x343b3a,.58,.42);
+const tornBanners=[],emberFires=[];
+function brokenWagon(x,z,size,rotation){
+ const g=new THREE.Group();g.position.set(x,heightAt(x,z),z);g.rotation.y=rotation;g.scale.setScalar(size);
+ const frame=new THREE.Mesh(new THREE.BoxGeometry(3.8,.25,1.65),weatheredWood);frame.position.y=.95;frame.castShadow=true;g.add(frame);
+ const beam1=new THREE.Mesh(new THREE.BoxGeometry(4.1,.18,.22),charredWood);beam1.position.set(-.1,1.22,.58);beam1.rotation.z=.18;beam1.castShadow=true;g.add(beam1);
+ const beam2=new THREE.Mesh(new THREE.BoxGeometry(3.2,.18,.2),charredWood);beam2.position.set(.5,1.35,-.48);beam2.rotation.z=-.38;beam2.castShadow=true;g.add(beam2);
+ for(const side of [-1,1]){
+  const wheel=new THREE.Mesh(new THREE.TorusGeometry(.72,.13,8,18),burntMetal);wheel.position.set(side*1.55,.55,0);wheel.rotation.y=Math.PI/2;wheel.castShadow=true;g.add(wheel);
+  const hub=new THREE.Mesh(new THREE.CylinderGeometry(.19,.19,.2,10),weatheredWood);hub.position.copy(wheel.position);hub.rotation.z=Math.PI/2;g.add(hub);
+ }
+ for(let i=0;i<4;i++){
+  const plank=new THREE.Mesh(new THREE.BoxGeometry(1.4+rand(i+z)*1.8,.12,.17),i%2?charredWood:weatheredWood);
+  plank.position.set((rand(i+x)-.5)*3,1.5+rand(i+z)*.45,(rand(i*3+z)-.5)*1.4);
+  plank.rotation.set(rand(i+11)*.45,rand(i+21)*1.5,(rand(i+31)-.5)*1.1);plank.castShadow=true;g.add(plank);
+ }
+ scene.add(g);
+}
+function fallenLog(x,z,length,angle){
+ const log=new THREE.Mesh(new THREE.CylinderGeometry(.28,.42,length,7),charredWood);
+ log.position.set(x,heightAt(x,z)+.32,z);log.rotation.z=Math.PI/2;log.rotation.y=angle;log.castShadow=true;log.receiveShadow=true;scene.add(log);
+}
+brokenWagon(18,10,1,.4);brokenWagon(-28,34,.78,-.8);brokenWagon(35,57,.9,1.9);
+fallenLog(-16,8,8,.25);fallenLog(28,35,10,-.65);fallenLog(-43,59,7,1.3);fallenLog(52,-2,9,.2);fallenLog(-51,10,8,2.1);
+function makeTornBanner(x,z,turn){
+ const g=new THREE.Group();g.position.set(x,heightAt(x,z),z);g.rotation.y=turn;
+ const pole=new THREE.Mesh(new THREE.CylinderGeometry(.075,.12,5.6,7),charredWood);pole.position.y=2.8;pole.castShadow=true;g.add(pole);
+ const clothGeo=new THREE.PlaneGeometry(1.65,2.25,8,9);
+ const clothMat=new THREE.MeshStandardMaterial({color:0x633d39,side:THREE.DoubleSide,roughness:.95});
+ const cloth=new THREE.Mesh(clothGeo,clothMat);cloth.position.set(.92,4.15,0);cloth.rotation.y=Math.PI/2;cloth.castShadow=true;g.add(cloth);
+ tornBanners.push({cloth,geo:clothGeo,seed:turn});scene.add(g);
+}
+makeTornBanner(-35,2,.6);makeTornBanner(42,24,-.9);makeTornBanner(-62,43,1.7);
+
+// Scorch marks and a few cold embers break up the ground texture.
+const scorchMat=new THREE.MeshBasicMaterial({color:0x292923,transparent:true,opacity:.32,depthWrite:false});
+const emberMat=new THREE.MeshBasicMaterial({color:0xb66a3c,transparent:true,opacity:.78});
+for(let i=0;i<13;i++){
+ const x=(rand(i+6000)-.5)*112,z=24+(rand(i+6200)-.5)*104,size=1.6+rand(i+6400)*3.8;
+ const scorch=new THREE.Mesh(new THREE.CircleGeometry(size,20),scorchMat);
+ scorch.rotation.x=-Math.PI/2;scorch.position.set(x,heightAt(x,z)+.04,z);scorch.scale.y=THREE.MathUtils.randFloat(.45,.9);scene.add(scorch);
+ if(i%3===0){const ember=new THREE.Mesh(new THREE.SphereGeometry(.07,7,6),emberMat);ember.position.set(x,heightAt(x,z)+.22,z);scene.add(ember);emberFires.push(ember);}
+}
+function makeAnchorStone(x,z,size){
+ const root=new THREE.Group();root.position.set(x,heightAt(x,z),z);
+ const pillar=new THREE.Mesh(new THREE.DodecahedronGeometry(size,1),islandStone);
+ pillar.scale.set(.7,1.9,.72);pillar.position.y=size*1.1;pillar.castShadow=true;root.add(pillar);
+ const node=new THREE.Group();node.position.y=size*2.4;root.add(node);
+ const gem=new THREE.Mesh(new THREE.OctahedronGeometry(.38,1),new THREE.MeshStandardMaterial({color:0x9ce1da,emissive:0x3f9b99,emissiveIntensity:1.1,metalness:.4,roughness:.22}));node.add(gem);
+ const halo=new THREE.Mesh(new THREE.TorusGeometry(.66,.035,7,32),new THREE.MeshBasicMaterial({color:0x9be8df,transparent:true,opacity:.72}));halo.rotation.x=Math.PI/2;node.add(halo);
+ scene.add(root);grappleTargets.push(node);return {root,node,gem,halo};
+}
+const groundAnchors=[makeAnchorStone(-19,15,1.25),makeAnchorStone(27,5,1.5),makeAnchorStone(48,44,1.3),makeAnchorStone(-52,45,1.1)];
+
 const cloudMat=new THREE.MeshBasicMaterial({color:0xd5dfdc,transparent:true,opacity:.15,depthWrite:false}),clouds=[];
 function makeCloud(x,y,z,s){
  const group=new THREE.Group();
