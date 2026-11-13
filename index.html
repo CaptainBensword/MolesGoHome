@@ -206,6 +206,23 @@ h1{font-size:clamp(64px,9.4vw,142px);line-height:.91;letter-spacing:.015em;margi
  .inventory-layout{grid-template-columns:1fr} #inventory-grid{grid-template-columns:repeat(4,1fr)}
  #inventory-card{padding:18px}
 }
+
+#quest-panel{position:absolute;left:28px;top:88px;width:224px;padding:12px 14px;background:rgba(10,15,14,.58);border:1px solid rgba(210,195,156,.2);backdrop-filter:blur(7px);pointer-events:none}
+#quest-panel .quest-kicker{font-size:8px;letter-spacing:.22em;color:#c0a878;margin-bottom:7px}
+#quest-title{font:600 14px Cinzel,Georgia,serif;color:#f1e7d1;letter-spacing:.07em}
+#quest-detail{font-size:10px;line-height:1.6;color:#c5c3b6;margin-top:5px}
+#grapple-status{position:absolute;right:28px;top:88px;min-width:150px;text-align:right;color:#cce4dc;font-size:9px;letter-spacing:.18em;text-shadow:0 2px 8px #000;opacity:.85}
+#grapple-status strong{color:#e1d0a8;font-weight:700}
+#combat-toast{position:absolute;left:50%;top:18%;transform:translateX(-50%);padding:9px 15px;background:rgba(9,16,15,.7);border:1px solid rgba(144,202,194,.32);color:#e1f0ea;font-size:10px;letter-spacing:.12em;opacity:0;transition:opacity .2s;pointer-events:none}
+#combat-toast.show{opacity:1}
+#ghost-guide{border-color:rgba(173,204,203,.5);box-shadow:0 14px 50px rgba(42,105,106,.15),0 14px 45px #0007}
+#ghost-guide .guide-next{color:#a9d2d0}
+.hotbar-slot.pack-slot:after{content:"";position:absolute;inset:4px;border:1px solid rgba(145,214,202,.28);pointer-events:none}
+.hotbar-slot.pack-slot .slot-empty{color:#a8d7d0}
+@media(max-width:650px){
+ #quest-panel{left:10px;top:72px;width:176px;padding:9px}
+ #grapple-status{right:12px;top:73px;font-size:8px}
+}
 </style>
 </head>
 <body>
@@ -269,7 +286,7 @@ h1{font-size:clamp(64px,9.4vw,142px);line-height:.91;letter-spacing:.015em;margi
  </div>
 </div>
 <div id="gamehud">
- <div id="world-label"><b>THE LOST FRONTIER</b><small>THE RIDGELINE</small></div><div id="clock-display">08:52 MORNING</div><button id="inventory-toggle" type="button">BAG <span>I</span></button><div id="crosshair"></div>
+ <div id="world-label"><b>THE LOST FRONTIER</b><small>THE RIDGELINE</small></div><div id="clock-display">08:52 MORNING</div><div id="quest-panel"><div class="quest-kicker">CURRENT TASK</div><div id="quest-title">A QUIET RIDGE</div><div id="quest-detail">Speak with the pale figure.</div></div><div id="grapple-status">GRAPPLE PACK <strong id="grapple-state">NOT RECEIVED</strong></div><div id="combat-toast"></div><button id="inventory-toggle" type="button">BAG <span>I</span></button><div id="crosshair"></div>
  <div id="health-panel"><div class="hud-label"><span>HEALTH</span><span id="health-value">100 / 100</span></div><div class="health-track"><div class="health-fill" id="health-fill"></div></div></div>
  <div id="hotbar-wrap"><div class="progress-row"><span id="level-label">LEVEL 1</span><div class="xp-track"><div id="xp-fill"></div></div><span id="xp-value">0 / 100 XP</span></div>
  <div id="hotbar"><button class="hotbar-slot selected" data-slot="0"><span class="slot-number">1</span><span class="slot-empty">—</span></button><button class="hotbar-slot" data-slot="1"><span class="slot-number">2</span><span class="slot-empty">—</span></button><button class="hotbar-slot" data-slot="2"><span class="slot-number">3</span><span class="slot-empty">—</span></button><button class="hotbar-slot" data-slot="3"><span class="slot-number">4</span><span class="slot-empty">—</span></button><button class="hotbar-slot" data-slot="4"><span class="slot-number">5</span><span class="slot-empty">—</span></button></div></div>
