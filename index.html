@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#111713">
-<title>Moles Go Home — A Talon Game</title>
+<title>The Lost Frontier — A Talon Game</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
 :root{--gold:#e8c987;--gold2:#a9824a;--red:#a83d35;--ink:#111713;--panel:rgba(14,20,17,.91);--muted:#b8b5a6}
@@ -51,7 +51,7 @@ input[type=range]{width:100%;accent-color:#c79b5c}
 .credit-rule{height:1px;background:linear-gradient(90deg,var(--gold2),transparent);margin:28px 0}
 .credit-role{font-size:9px;color:#a89f8c;letter-spacing:.24em;text-transform:uppercase;margin-top:24px}
 .credit-name{font:600 19px Cinzel,Georgia,serif;color:#f1e7d2;margin-top:8px}
-#loading{position:fixed;z-index:10;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;background:radial-gradient(ellipse at 52% 43%,rgba(76,76,49,.28),transparent 48%),#101713}
+#story{position:fixed;z-index:10;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;background:radial-gradient(ellipse at 52% 43%,rgba(76,76,49,.28),transparent 48%),#101713}
 #loading.show{display:flex}
 .load-kicker{font-size:9px;letter-spacing:.42em;color:var(--gold);text-transform:uppercase}
 .load-title{font:600 clamp(34px,5vw,58px) Cinzel,Georgia,serif;letter-spacing:.12em;margin:19px 0 9px}
@@ -97,8 +97,8 @@ input[type=range]{width:100%;accent-color:#c79b5c}
  <div class="corner"><div class="talon-mark">TALON</div><small>AN INDEPENDENT GAME</small></div>
  <div class="menu-copy">
   <div class="eyebrow">FIRST-PERSON ACTION ADVENTURE</div>
-  <h1>MOLES<br>GO HOME<span>THE FIRST FRONTIER</span></h1>
-  <p class="subtitle">A trail leads down from the hill. An old stone gate stands beyond the trees.</p>
+  <h1>THE LOST<br>FRONTIER<span>A TALON GAME</span></h1>
+  <p class="subtitle">A messenger wakes beyond the known roads, with no memory of the journey.</p>
   <div class="actions">
    <button class="action primary" id="play"><span class="mark">▶</span> Play</button>
    <button class="action" id="settings"><span class="mark">⚙</span> Settings</button>
@@ -106,14 +106,30 @@ input[type=range]{width:100%;accent-color:#c79b5c}
    <button class="action" id="credits"><span class="mark">✦</span> Credits</button>
   </div>
  </div>
- <div class="menu-bottom"><span>Build 0.2</span><span>TALON</span></div>
+ <div class="menu-bottom"><span>Build 0.3</span><span>TALON</span></div>
 </div>
 <aside id="drawer">
  <div class="drawer-top"><h2 id="drawer-title">Settings</h2><button class="close" id="drawer-close" aria-label="Close">×</button></div>
  <div id="drawer-content"></div>
 </aside>
+
+<div id="story" aria-live="polite">
+ <div class="story-mist one"></div><div class="story-mist two"></div>
+ <div class="story-content" id="story-content">
+  <div class="story-kicker" id="story-kicker"></div>
+  <div class="story-copy" id="story-copy"></div>
+  <div class="story-footer">
+   <span class="story-count" id="story-count"></span>
+   <div class="story-actions">
+    <button class="story-btn" id="story-back">Back</button>
+    <button class="story-btn primary" id="story-next">Continue</button>
+   </div>
+  </div>
+ </div>
+</div>
+
 <div id="loading">
- <div class="load-kicker">Talon presents</div><div class="load-title">THE FRONTIER</div>
+ <div class="load-kicker">Talon presents</div><div class="load-title">THE LOST FRONTIER</div>
  <div class="load-text" id="loadtext">Preparing the world...</div>
  <div class="load-track"><div id="loadbar"></div></div><div id="loadpercent">0%</div>
 </div>
@@ -128,7 +144,7 @@ input[type=range]{width:100%;accent-color:#c79b5c}
   </div>
  </div>
 </div>
-<div id="gamehud"><div id="world-label"><b>THE FIRST FRONTIER</b><small>THE RIDGELINE</small></div><div id="crosshair"></div><div id="game-hint">CLICK TO LOOK AROUND &nbsp;·&nbsp; WASD TO MOVE &nbsp;·&nbsp; ESC TO PAUSE</div><div id="game-state">BUILD 0.2</div></div>
+<div id="gamehud"><div id="world-label"><b>THE LOST FRONTIER</b><small>THE RIDGELINE</small></div><div id="crosshair"></div><div id="game-hint">CLICK TO LOOK AROUND &nbsp;·&nbsp; WASD TO MOVE &nbsp;·&nbsp; ESC TO PAUSE</div><div id="game-state">BUILD 0.2</div></div>
 <div id="toast"></div><div id="fade"></div>
 <script type="module">
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js';
@@ -285,10 +301,47 @@ applySettings();
 function openControls(){showDrawer('Controls','<p class="drawer-note">Current movement controls:</p>'+
  '<div class="keyline"><span>Move</span><span>W A S D</span></div><div class="keyline"><span>Look around</span><span>MOUSE</span></div><div class="keyline"><span>Jump</span><span>SPACE</span></div><div class="keyline"><span>Sprint</span><span>SHIFT</span></div><div class="keyline"><span>Pause / release mouse</span><span>ESC</span></div><div class="keyline"><span>Capture mouse</span><span>CLICK</span></div>'+
  '<p class="drawer-note">The grapple spike is planned as the main weapon and traversal tool. Its controls are not implemented yet.</p>');}
-function openCredits(){showDrawer('Credits','<div class="credit-logo">TALON</div><div class="credit-sub">INDEPENDENT CREATIVE STUDIO</div><div class="credit-rule"></div><p class="drawer-note">Moles Go Home is an original game by Talon.</p><div class="credit-role">Studio</div><div class="credit-name">Talon</div><div class="credit-role">Game</div><div class="credit-name">Moles Go Home</div>');}
+function openCredits(){showDrawer('Credits','<div class="credit-logo">TALON</div><div class="credit-sub">INDEPENDENT CREATIVE STUDIO</div><div class="credit-rule"></div><p class="drawer-note">The Lost Frontier is an original game by Talon.</p><div class="credit-role">Studio</div><div class="credit-name">Talon</div><div class="credit-role">Game</div><div class="credit-name">The Lost Frontier</div>');}
 $('settings').onclick=openSettings;$('controls').onclick=openControls;$('credits').onclick=openCredits;
 $('drawer-close').onclick=closeDrawer;
-$('play').onclick=beginLoading;
+$('play').onclick=beginStory;
+const storyPages=[
+ {kicker:'THE MESSAGE',lines:['You were a messenger.','There was a place you had to reach. A message you had to deliver.','You remember that much.']},
+ {kicker:'WHAT IS MISSING',lines:['The journey is gone from your mind.','You cannot remember who sent you, what the message said, or why it mattered.','Only that you were meant to reach somewhere beyond the known roads.']},
+ {kicker:'THE LOST FRONTIER',lines:['You wake at the edge of a place no map can explain.','The road ends here. Your reason for coming does not return.']},
+ {kicker:'SOMEONE IS AWARE',lines:['Far beyond the dark, something has noticed you.','It was waiting long before you arrived.'],threat:true}
+];
+let storyIndex=0;
+function renderStory(){
+ const page=storyPages[storyIndex],content=$('story-content');
+ content.classList.add('changing');
+ setTimeout(()=>{
+  $('story-kicker').textContent=page.kicker;
+  $('story-copy').innerHTML=page.lines.map((line,i)=>'<p'+(page.threat&&i===1?' class="story-threat"':'')+'>'+line+'</p>').join('');
+  $('story-count').textContent=String(storyIndex+1).padStart(2,'0')+' / '+String(storyPages.length).padStart(2,'0');
+  $('story-next').textContent=storyIndex===storyPages.length-1?'Enter the Frontier':'Continue';
+  $('story').classList.toggle('threat',!!page.threat);
+  content.classList.remove('changing');
+ },170);
+}
+function beginStory(){
+ mode='story';storyIndex=0;
+ $('menu').classList.add('leaving');
+ $('story').classList.add('visible');
+ renderStory();
+}
+function closeStory(){
+ $('story').classList.remove('visible','threat');
+ $('menu').style.display='flex';
+ $('menu').classList.remove('leaving');
+ mode='menu';
+}
+$('story-back').onclick=closeStory;
+$('story-next').onclick=()=>{
+ if(storyIndex<storyPages.length-1){storyIndex++;renderStory();}
+ else beginLoading();
+};
+
 $('pause-settings').onclick=openSettings;
 $('resume').onclick=()=>{closeDrawer();$('pause').classList.remove('show');if(renderer.domElement.requestPointerLock)renderer.domElement.requestPointerLock();else toast('Use WASD to move and the mouse to look around.');};
 $('leave').onclick=()=>{
@@ -297,7 +350,7 @@ $('leave').onclick=()=>{
 };
 let loadTimer=null;
 function beginLoading(){
- mode='loading';$('menu').classList.add('leaving');$('shade').style.display='none';$('loading').classList.add('show');
+ mode='loading';$('story').classList.remove('visible');$('menu').classList.add('leaving');$('menu').style.display='none';$('shade').style.display='none';$('loading').classList.add('show');
  const messages=['Loading terrain...','Placing trees...','Setting up the ridgeline...','Almost ready...'];
  let p=0;$('loadbar').style.width='0%';$('loadpercent').textContent='0%';$('loadtext').textContent=messages[0];
  clearInterval(loadTimer);
