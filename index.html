@@ -695,10 +695,13 @@ function updateStats(){
 function renderInventory(){
  const grid=$('inventory-grid');grid.innerHTML='';
  inventoryItems.forEach((item,i)=>{
-  const slot=document.createElement('div');slot.className='inventory-slot';
-  slot.innerHTML='<span>'+String(i+1).padStart(2,'0')+'</span><i>'+(item?(item.icon||'✦'):'·')+'</i>';slot.title=item?item.name:'Empty slot';
+  const slot=document.createElement('div');slot.className='inventory-slot'+(item?' filled':'');
+  slot.innerHTML='<span>'+String(i+1).padStart(2,'0')+'</span><i>'+(item?(item.icon||'✦'):'·')+'</i>';
+  slot.title=item?item.name+' — '+(item.type||'item'):'Empty slot';
   grid.appendChild(slot);
  });
+ const empty=document.querySelector('.inventory-empty');
+ if(empty){const hasItems=inventoryItems.some(Boolean);empty.style.display=hasItems?'none':'block';}
 }
 function selectHotbar(index){
  selectedSlot=index;
@@ -765,7 +768,7 @@ function updateQuest(){
   $('quest-detail').textContent='The Skrits have scattered. The ridge is quiet for now.';
  }else if(grapplePackOwned){
   $('quest-title').textContent='CLEAR THE RIDGE';
-  $('quest-detail').textContent='Drive off the Skrits · '+defeatedCount+' / 3';
+  $('quest-detail').textContent='Drive off the ridge-creatures · '+defeatedCount+' / 3';
  }else{
   $('quest-title').textContent='A QUIET RIDGE';
   $('quest-detail').textContent='Speak with the pale figure.';
@@ -919,8 +922,10 @@ function collectLoot(dt){
   drop.root.rotation.y+=dt*.8;drop.root.rotation.z=Math.sin(drop.age*1.4)*.12;
   const distance=Math.hypot(player.x-drop.root.position.x,player.z-drop.root.position.z);
   if(distance<2.5&&Math.abs(player.y-drop.root.position.y)<4){
+   let collected=true;
    if(drop.type==='xp'){gainExperience(drop.amount);toast('+'+drop.amount+' XP');}
-   else {addInventoryItem({name:drop.name,icon:'◆',type:'material'});toast(drop.name+' collected');}
+   else {collected=addInventoryItem({name:drop.name,icon:'◆',type:'material'});if(collected)toast(drop.name+' collected');}
+   if(!collected)continue;
    spawnEffect(drop.root.position,drop.type==='xp'?0x9ce6d5:0xd6bd83,6,1.4);
    scene.remove(drop.root);lootDrops.splice(i,1);
   }
