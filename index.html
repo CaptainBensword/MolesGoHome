@@ -232,7 +232,7 @@ h1{font-size:clamp(64px,9.4vw,142px);line-height:.91;letter-spacing:.015em;margi
  </div>
 </div>
 <div id="gamehud">
- <div id="world-label"><b>THE LOST FRONTIER</b><small>THE RIDGELINE</small></div><div id="clock-display">07:26 MORNING</div><div id="crosshair"></div>
+ <div id="world-label"><b>THE LOST FRONTIER</b><small>THE RIDGELINE</small></div><div id="clock-display">08:52 MORNING</div><button id="inventory-toggle" type="button">BAG <span>I</span></button><div id="crosshair"></div>
  <div id="health-panel"><div class="hud-label"><span>HEALTH</span><span id="health-value">100 / 100</span></div><div class="health-track"><div class="health-fill" id="health-fill"></div></div></div>
  <div id="hotbar-wrap"><div class="progress-row"><span id="level-label">LEVEL 1</span><div class="xp-track"><div id="xp-fill"></div></div><span id="xp-value">0 / 100 XP</span></div>
  <div id="hotbar"><button class="hotbar-slot selected" data-slot="0"><span class="slot-number">1</span><span class="slot-empty">—</span></button><button class="hotbar-slot" data-slot="1"><span class="slot-number">2</span><span class="slot-empty">—</span></button><button class="hotbar-slot" data-slot="2"><span class="slot-number">3</span><span class="slot-empty">—</span></button><button class="hotbar-slot" data-slot="3"><span class="slot-number">4</span><span class="slot-empty">—</span></button><button class="hotbar-slot" data-slot="4"><span class="slot-number">5</span><span class="slot-empty">—</span></button></div></div>
@@ -240,14 +240,14 @@ h1{font-size:clamp(64px,9.4vw,142px);line-height:.91;letter-spacing:.015em;margi
 </div>
 <div id="ghost-guide"><div class="guide-speaker">A VOICE NEARBY</div><div id="guide-text"></div><div class="guide-next">E / ENTER &nbsp; CONTINUE</div></div>
 <div id="inventory-screen"><div id="inventory-card">
- <div class="inventory-head"><h2>SATCHEL</h2><button id="inventory-close" class="inventory-close">×</button></div>
- <div class="inventory-layout"><aside>
-  <div class="inventory-stat"><label>LEVEL</label><strong id="inv-level">1</strong><small>Current level</small></div>
-  <div class="inventory-stat"><label>EXPERIENCE</label><strong id="inv-xp">0 / 100</strong><small>Experience points</small></div>
-  <div class="inventory-stat"><label>HEALTH</label><strong id="inv-health">100 / 100</strong><small>Current vitality</small></div>
-  <p class="inventory-empty">Your satchel is empty. Anything you find will be kept here.</p>
- </aside><main><div class="inventory-section">ITEMS</div><div id="inventory-grid"></div></main></div>
- <div class="inventory-footer"><span>THE LOST FRONTIER</span><span>I / ESC TO CLOSE</span></div>
+ <div class="inventory-head"><div><div class="inventory-kicker">TRAVELER'S PACK</div><h2>INVENTORY</h2></div><button id="inventory-close" class="inventory-close" aria-label="Close inventory">×</button></div>
+ <div class="inventory-summary">
+  <div class="inventory-stat"><label>LEVEL</label><strong id="inv-level">1</strong></div>
+  <div class="inventory-stat"><label>EXPERIENCE</label><strong id="inv-xp">0 / 100</strong></div>
+  <div class="inventory-stat"><label>HEALTH</label><strong id="inv-health">100 / 100</strong></div>
+ </div>
+ <div class="inventory-main"><div class="inventory-section">ITEMS</div><div id="inventory-grid"></div><p class="inventory-empty">Nothing in your pack yet.</p></div>
+ <div class="inventory-footer"><span>THE LOST FRONTIER</span><span>I TO CLOSE</span></div>
 </div></div>
 <div id="toast"></div><div id="fade"></div>
 <script type="module">
@@ -368,8 +368,8 @@ makeCloud(-132,59,-142,1.25);makeCloud(12,64,-164,1.4);
 const player={x:0,z:17,y:heightAt(0,17),vy:0,grounded:true};
 let yaw=0,pitch=-.045,mode='menu',locked=false,moveSpeed=8;
 let health=100,maxHealth=100,experience=0,level=1,selectedSlot=0,inventoryOpen=false,guideActive=false,guideStarted=false;
-const inventoryItems=Array(20).fill(null),hotbarSlots=5;
-let timeOfDay=.31;
+const inventoryItems=Array(12).fill(null),hotbarSlots=5;
+let timeOfDay=.37;
 const dayLength=600;
 const guidePages=[
  'You\'re awake. Good. Use W, A, S and D to move. Move the mouse to look around.',
@@ -398,24 +398,7 @@ function makeHand(side){
 }
 makeHand(-1);makeHand(1);hands.visible=false;camera.add(hands);scene.add(camera);
 
-// The traveler wears a plain coat and carries the satchel mentioned in the opening.
-const travelerBody=new THREE.Group();
-const coatMat=standard(0x384b45),trouserMat=standard(0x343b39),bootMat=standard(0x292824),satchelMat=standard(0x76513a);
-const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.32,.46,4,10),coatMat);
-torso.position.y=.99;torso.scale.set(1,.98,.78);torso.castShadow=true;travelerBody.add(torso);
-const belt=new THREE.Mesh(new THREE.CylinderGeometry(.33,.33,.075,12),satchelMat);
-belt.position.y=.7;travelerBody.add(belt);
-for(const side of [-1,1]){
- const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.125,.42,4,8),trouserMat);
- leg.position.set(side*.145,.39,0);leg.castShadow=true;travelerBody.add(leg);
- const boot=new THREE.Mesh(new THREE.BoxGeometry(.22,.16,.36),bootMat);
- boot.position.set(side*.145,.105,-.045);boot.castShadow=true;travelerBody.add(boot);
-}
-const satchel=new THREE.Mesh(new THREE.BoxGeometry(.31,.35,.18),satchelMat);
-satchel.position.set(-.34,.64,.12);satchel.rotation.z=-.12;satchel.castShadow=true;travelerBody.add(satchel);
-const satchelFlap=new THREE.Mesh(new THREE.BoxGeometry(.33,.11,.2),standard(0x8b6345));
-satchelFlap.position.set(-.34,.81,.105);satchelFlap.castShadow=true;travelerBody.add(satchelFlap);
-travelerBody.visible=false;scene.add(travelerBody);
+
 
 const keys={};
 const settings={quality:'high',sensitivity:1,fov:76};
@@ -547,7 +530,7 @@ $('leave').onclick=()=>{
 };
 let loadTimer=null;
 function beginLoading(){
- timeOfDay=.31;mode='loading';$('story').classList.remove('visible');$('menu').classList.add('leaving');$('menu').style.display='none';$('shade').style.display='none';$('loading').classList.add('show');
+ timeOfDay=.37;mode='loading';$('story').classList.remove('visible');$('menu').classList.add('leaving');$('menu').style.display='none';$('shade').style.display='none';$('loading').classList.add('show');
  const messages=['Loading the world...','Setting the light...','Finishing the ridge...','Ready.'];
  let p=0;$('loadbar').style.width='0%';$('loadpercent').textContent='0%';$('loadtext').textContent=messages[0];
  clearInterval(loadTimer);
@@ -640,7 +623,7 @@ function updateDayNight(dt){
 function animate(){
  requestAnimationFrame(animate);
  const dt=Math.min(clock.getDelta(),.04),tickTime=clock.elapsedTime;
- ghost.visible=mode==='game';travelerBody.visible=mode==='game';travelerBody.position.set(player.x,player.y,player.z);travelerBody.rotation.y=yaw;
+ ghost.visible=mode==='game';
  if(mode==='menu'||mode==='story'){
   const t=clock.elapsedTime;
   camera.position.set(24+Math.sin(t*.055)*29,39+Math.sin(t*.11)*2.2,72+Math.cos(t*.055)*12);
