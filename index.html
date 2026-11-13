@@ -302,9 +302,9 @@ const skyUniforms={
 };
 const skyMaterial=new THREE.ShaderMaterial({
  uniforms:skyUniforms,side:THREE.BackSide,depthWrite:false,depthTest:false,fog:false,
- vertexShader:\`varying vec3 vSkyDir;
- void main(){vSkyDir=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}\`,
- fragmentShader:\`uniform vec3 topColor;uniform vec3 horizonColor;uniform vec3 groundColor;uniform vec3 sunTint;varying vec3 vSkyDir;
+ vertexShader:`varying vec3 vSkyDir;
+ void main(){vSkyDir=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
+ fragmentShader:`uniform vec3 topColor;uniform vec3 horizonColor;uniform vec3 groundColor;uniform vec3 sunTint;varying vec3 vSkyDir;
  void main(){
   float h=clamp(vSkyDir.y,-1.0,1.0);
   float upper=smoothstep(-0.08,0.58,h);
@@ -314,7 +314,7 @@ const skyMaterial=new THREE.ShaderMaterial({
   float rim=exp(-pow((h-0.015)*17.0,2.0))*.18;
   col=mix(col,sunTint,rim);
   gl_FragColor=vec4(col,1.0);
- }\`
+ }`
 });
 const skyDome=new THREE.Mesh(new THREE.SphereGeometry(600,48,32),skyMaterial);
 skyDome.renderOrder=-1000;skyDome.frustumCulled=false;scene.add(skyDome);
