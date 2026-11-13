@@ -387,7 +387,7 @@ function beginLoading(){
   $('loadbar').style.width=p+'%';$('loadpercent').textContent=p+'%';$('loadtext').textContent=messages[Math.min(3,Math.floor(p/27))];
   if(p>=100){clearInterval(loadTimer);setTimeout(()=>{
    $('loading').classList.remove('show');$('menu').style.display='none';$('shade').style.display='none';$('gamehud').style.display='block';
-   mode='game';positionCamera();$('pause-title').textContent='THE RIDGELINE';$('pause-copy').textContent='You stand above the First Frontier. A trail winds down into the valley, and something old waits beyond the trees.';$('resume-label').textContent='Enter the world';$('pause').classList.add('show');
+   mode='game';positionCamera();$('pause-title').textContent='THE RIDGELINE';$('pause-copy').textContent='You stand above the Lost Frontier. A trail winds down into the valley, and the old road disappears between the trees.';$('resume-label').textContent='Enter the world';$('pause').classList.add('show');
   },350);}
  },145);
 }
