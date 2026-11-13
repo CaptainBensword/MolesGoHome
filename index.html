@@ -406,7 +406,7 @@ sunHalo.scale.set(150,150,1);sunHalo.position.copy(sunDisc.position);scene.add(s
 // Low-poly forest: instancing keeps the scene light enough for a browser.
 const trunkMat=standard(0x514233),leafMats=[standard(0x294b3d),standard(0x365a43),standard(0x49664a)];
 const trunkGeo=new THREE.CylinderGeometry(.2,.31,2.8,7);
-const crownGeos=[new THREE.ConeGeometry(2.15,3.3,7),new THREE.ConeGeometry(1.72,3.0,7),new THREE.ConeGeometry(1.23,2.5,7)];
+const crownGeos=[new THREE.IcosahedronGeometry(1.55,1),new THREE.IcosahedronGeometry(1.22,1),new THREE.IcosahedronGeometry(.91,1)];
 const treeData=[];
 const treePatches=[{x:-76,z:-36,r:23,count:34},{x:78,z:-43,r:25,count:38},{x:-118,z:-112,r:29,count:42},{x:112,z:-121,r:30,count:42},{x:-43,z:-139,r:18,count:18},{x:49,z:-146,r:20,count:20}];
 treePatches.forEach((patch,p)=>{
@@ -586,9 +586,9 @@ $('inventory-toggle').onclick=()=>inventoryOpen?closeInventory():openInventory()
 $('inventory-screen').addEventListener('click',e=>{if(e.target===$('inventory-screen'))closeInventory();});
 updateStats();renderInventory();
 
-function openControls(){showDrawer('Controls','<p class="drawer-note">Movement and exploration:</p>'+
- '<div class="keyline"><span>Move</span><span>W A S D</span></div><div class="keyline"><span>Look around</span><span>MOUSE</span></div><div class="keyline"><span>Jump</span><span>SPACE</span></div><div class="keyline"><span>Sprint</span><span>SHIFT</span></div><div class="keyline"><span>Talk to the ghost</span><span>E</span></div><div class="keyline"><span>Open satchel</span><span>I</span></div><div class="keyline"><span>Select quick slot</span><span>1–5</span></div><div class="keyline"><span>Pause</span><span>ESC</span></div>');}
-function openCredits(){showDrawer('Credits','<div class="credit-logo">TALON</div><div class="credit-rule"></div><p class="drawer-note">The Lost Frontier is an original game by Talon.</p><div class="credit-role">Studio</div><div class="credit-name">Talon</div><div class="credit-role">Game</div><div class="credit-name">The Lost Frontier</div>');}
+function openControls(){showDrawer('Controls','<p class="drawer-note">Movement and interaction:</p>'+
+ '<div class="keyline"><span>Move</span><span>W A S D</span></div><div class="keyline"><span>Look around</span><span>MOUSE</span></div><div class="keyline"><span>Jump</span><span>SPACE</span></div><div class="keyline"><span>Sprint</span><span>SHIFT</span></div><div class="keyline"><span>Talk</span><span>E</span></div><div class="keyline"><span>Inventory</span><span>I</span></div><div class="keyline"><span>Quick slots</span><span>1–5</span></div><div class="keyline"><span>Pause</span><span>ESC</span></div>');}
+function openCredits(){showDrawer('Credits','<div class="credit-logo">TALON</div><div class="credit-rule"></div><p class="drawer-note">The Lost Frontier is an original game by Talon.</p><div class="credit-role">Studio</div><div class="credit-name">Talon</div><div class="credit-role">Game</div><div class="credit-name">The Lost Frontier</div><div class="credit-role">Ground material</div><div class="credit-name">Rocky Terrain — Poly Haven (CC0)</div>');}
 $('settings').onclick=openSettings;$('controls').onclick=openControls;$('credits').onclick=openCredits;
 $('drawer-close').onclick=closeDrawer;
 $('play').onclick=beginStory;
