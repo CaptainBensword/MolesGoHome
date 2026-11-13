@@ -364,7 +364,7 @@ function makeCloud(x,y,z,s){
 makeCloud(-62,47,-42,1.3);makeCloud(48,55,-74,1.1);makeCloud(110,48,-121,1.6);
 makeCloud(-132,59,-142,1.25);makeCloud(12,64,-164,1.4);
 
-// First-person traveler. No weapon equipped at the start.
+// First-person traveler, starting with empty hands.
 const player={x:0,z:17,y:heightAt(0,17),vy:0,grounded:true};
 let yaw=0,pitch=-.045,mode='menu',locked=false,moveSpeed=8;
 let health=100,maxHealth=100,experience=0,level=1,selectedSlot=0,inventoryOpen=false,guideActive=false,guideStarted=false;
