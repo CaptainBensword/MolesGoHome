@@ -721,7 +721,7 @@ $('inventory-screen').addEventListener('click',e=>{if(e.target===$('inventory-sc
 updateStats();renderInventory();
 
 function openControls(){showDrawer('Controls','<p class="drawer-note">Movement and interaction:</p>'+
- '<div class="keyline"><span>Move</span><span>W A S D</span></div><div class="keyline"><span>Look around</span><span>MOUSE</span></div><div class="keyline"><span>Jump</span><span>SPACE</span></div><div class="keyline"><span>Sprint</span><span>SHIFT</span></div><div class="keyline"><span>Talk</span><span>E</span></div><div class="keyline"><span>Inventory</span><span>I</span></div><div class="keyline"><span>Quick slots</span><span>1–5</span></div><div class="keyline"><span>Pause</span><span>ESC</span></div>');}
+ '<div class="keyline"><span>Move</span><span>W A S D</span></div><div class="keyline"><span>Look around</span><span>MOUSE</span></div><div class="keyline"><span>Jump</span><span>SPACE</span></div><div class="keyline"><span>Sprint</span><span>SHIFT</span></div><div class="keyline"><span>Talk</span><span>E</span></div><div class="keyline"><span>Tether</span><span>F</span></div><div class="keyline"><span>Pulse</span><span>LEFT CLICK</span></div><div class="keyline"><span>Inventory</span><span>I</span></div><div class="keyline"><span>Quick slots</span><span>1–5</span></div><div class="keyline"><span>Pause</span><span>ESC</span></div>');}
 function openCredits(){showDrawer('Credits','<div class="credit-logo">TALON</div><div class="credit-rule"></div><p class="drawer-note">The Lost Frontier is an original game by Talon.</p><div class="credit-role">Studio</div><div class="credit-name">Talon</div><div class="credit-role">Game</div><div class="credit-name">The Lost Frontier</div><div class="credit-role">Ground material</div><div class="credit-name">Rocky Terrain — Poly Haven (CC0)</div>');}
 $('settings').onclick=openSettings;$('controls').onclick=openControls;$('credits').onclick=openCredits;
 $('drawer-close').onclick=closeDrawer;
@@ -1010,8 +1010,10 @@ function beginLoading(){
  },145);
 }
 renderer.domElement.addEventListener('click',()=>{
+ if(mode==='game'&&locked&&!inventoryOpen){castPulse();return;}
  if(mode==='game'&&!locked&&!$('pause').classList.contains('show')&&renderer.domElement.requestPointerLock)renderer.domElement.requestPointerLock();
 });
+renderer.domElement.addEventListener('contextmenu',e=>e.preventDefault());
 document.addEventListener('pointerlockchange',()=>{
  locked=document.pointerLockElement===renderer.domElement;
  if(mode==='game'&&!inventoryOpen)$('pause').classList.toggle('show',!locked);
@@ -1026,7 +1028,8 @@ document.addEventListener('keydown',e=>{
  if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
  if(mode==='game'&&e.code==='KeyI'){e.preventDefault();if(inventoryOpen)closeInventory();else openInventory();return;}
  if(mode==='game'&&inventoryOpen){if(e.code==='Escape')closeInventory();return;}
- if(mode==='game'&&locked&&(e.code==='KeyE'||e.code==='Enter')){
+ if(mode==='game'&&locked&&e.code==='KeyF'&&!e.repeat){fireGrapple();return;}
+ if(mode==='game'&&locked&&(e.code==='KeyE'||e.code==='Enter')&&!e.repeat){
   if(guideActive){showGuide(guideIndex+1);return;}
   const distance=Math.hypot(player.x-ghost.position.x,player.z-ghost.position.z);
   if(distance<10){talkToGhost();return;}
@@ -1034,6 +1037,7 @@ document.addEventListener('keydown',e=>{
  if(mode==='game'&&e.code.startsWith('Digit')){
   const n=Number(e.code.slice(5))-1;if(n>=0&&n<hotbarSlots)selectHotbar(n);
  }
+ if(e.code==='Space'&&!e.repeat)jumpQueued=true;
  keys[e.code]=true;
 });
 document.addEventListener('keyup',e=>{keys[e.code]=false;});
@@ -1043,7 +1047,9 @@ const clock=new THREE.Clock();
 const menuTarget=new THREE.Vector3(0,8,-47);
 const menuCamStart=new THREE.Vector3(20,21,51);
 function updateGame(dt){
- if(mode!=='game'||!locked)return;
+ if(mode!=='game'||!locked||inventoryOpen)return;
+ pulseCooldown=Math.max(0,pulseCooldown-dt);
+ damageCooldown=Math.max(0,damageCooldown-dt);
  const dir=new THREE.Vector3(0,0,0);
  const forward=new THREE.Vector3(-Math.sin(yaw),0,-Math.cos(yaw));
  const right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
@@ -1051,16 +1057,46 @@ function updateGame(dt){
  if(keys.KeyS||keys.ArrowDown)dir.sub(forward);
  if(keys.KeyD||keys.ArrowRight)dir.add(right);
  if(keys.KeyA||keys.ArrowLeft)dir.sub(right);
- const sprint=keys.ShiftLeft||keys.ShiftRight;
- if(dir.lengthSq()>0){dir.normalize();const speed=moveSpeed*(sprint?1.55:1);player.x+=dir.x*speed*dt;player.z+=dir.z*speed*dt;}
- player.x=THREE.MathUtils.clamp(player.x,-164,164);player.z=THREE.MathUtils.clamp(player.z,-164,164);
+ if(dir.lengthSq()>0)dir.normalize();
+ const sprint=keys.ShiftLeft||keys.ShiftRight,maxSpeed=moveSpeed*(sprint?1.55:1);
+ const acceleration=player.grounded?28:13;
+ player.vx+=dir.x*acceleration*dt;player.vz+=dir.z*acceleration*dt;
+ const horizontalSpeed=Math.hypot(player.vx,player.vz);
+ if(horizontalSpeed>maxSpeed){player.vx=player.vx/horizontalSpeed*maxSpeed;player.vz=player.vz/horizontalSpeed*maxSpeed;}
+ if(dir.lengthSq()===0&&!grappleActive){
+  const friction=player.grounded?Math.pow(.035,dt):Math.pow(.72,dt);
+  player.vx*=friction;player.vz*=friction;
+ }
+ if(jumpQueued){
+  if(grappleActive){grappleActive=false;grappleAnchor=null;tetherLine.visible=false;hookTip.visible=false;$('grapple-state').textContent='READY · F';player.vy=Math.max(player.vy,6.2);}
+  else if(player.grounded)player.vy=8.7;
+  player.grounded=false;jumpQueued=false;
+ }
+ player.vy-=19.5*dt;
+ player.x+=player.vx*dt;player.z+=player.vz*dt;player.y+=player.vy*dt;
+ player.x=THREE.MathUtils.clamp(player.x,-245,245);player.z=THREE.MathUtils.clamp(player.z,-245,245);
+
+ if(grappleActive&&grappleAnchor){
+  const bodyPoint=new THREE.Vector3(player.x,player.y+1.0,player.z);
+  const offset=bodyPoint.clone().sub(grappleAnchor),distance=offset.length();
+  if(distance>grappleLength){
+   const normal=offset.normalize();
+   const constrained=grappleAnchor.clone().addScaledVector(normal,grappleLength);
+   player.x=constrained.x;player.y=constrained.y-1.0;player.z=constrained.z;
+   const velocity=new THREE.Vector3(player.vx,player.vy,player.vz);
+   const outward=velocity.dot(normal);
+   if(outward>0){velocity.addScaledVector(normal,-outward);player.vx=velocity.x;player.vy=velocity.y;player.vz=velocity.z;}
+  }
+ }
  const floor=heightAt(player.x,player.z);
- if(keys.Space&&player.grounded){player.vy=8.7;player.grounded=false;}
- player.vy-=22*dt;player.y+=player.vy*dt;
- if(player.y<=floor){player.y=floor;player.vy=0;player.grounded=true;}
+ if(player.y<=floor){player.y=floor;player.vy=0;player.grounded=true;player.vx*=.88;player.vz*=.88;}
  positionCamera();
+ updateTether();
+ updateCreatureAI(dt);
+ collectLoot(dt);
  const ghostDistance=Math.hypot(player.x-ghost.position.x,player.z-ghost.position.z);
- $('interact-prompt').style.display=(!guideActive&&ghostDistance<10&&locked)?'block':'none';
+ $('interact-prompt').style.display=(!guideActive&&!grapplePackOwned&&ghostDistance<10&&locked)?'block':'none';
+ if(grapplePackOwned){grappleRig.rotation.z=Math.sin(clock.elapsedTime*8)*.025*(horizontalSpeed>.5?1:0);grappleRig.position.y=-.51+Math.sin(clock.elapsedTime*8)*.012*(horizontalSpeed>.5?1:0);}
 }
 
 const skyDay=new THREE.Color(0x8eabb5),skyNight=new THREE.Color(0x101b29),skyDusk=new THREE.Color(0xb57959);
