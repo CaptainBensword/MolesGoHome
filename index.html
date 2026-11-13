@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#111713">
-<title>The Lost Frontier — A Talon Game</title>
+<title>The Lost Frontier</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
 :root{--gold:#e8c987;--gold2:#a9824a;--red:#a83d35;--ink:#111713;--panel:rgba(14,20,17,.91);--muted:#b8b5a6}
@@ -122,10 +122,10 @@ input[type=range]{width:100%;accent-color:#c79b5c}
 <body>
 <div id="shade"></div>
 <div id="menu">
- <div class="corner"><div class="talon-mark">TALON</div><small>AN INDEPENDENT GAME</small></div>
+ <div class="corner"><div class="talon-mark">TALON</div></div>
  <div class="menu-copy">
   <div class="eyebrow">FIRST-PERSON ACTION ADVENTURE</div>
-  <h1>THE LOST<br>FRONTIER<span>A TALON GAME</span></h1>
+  <h1>THE LOST<br>FRONTIER</h1>
   <p class="subtitle">A messenger wakes beyond the known roads, with no memory of the journey.</p>
   <div class="actions">
    <button class="action primary" id="play"><span class="mark">▶</span> Play</button>
@@ -157,7 +157,7 @@ input[type=range]{width:100%;accent-color:#c79b5c}
 </div>
 
 <div id="loading">
- <div class="load-kicker">Talon presents</div><div class="load-title">THE LOST FRONTIER</div>
+ <div class="load-title">THE LOST FRONTIER</div>
  <div class="load-text" id="loadtext">Preparing the world...</div>
  <div class="load-track"><div id="loadbar"></div></div><div id="loadpercent">0%</div>
 </div>
@@ -329,7 +329,7 @@ applySettings();
 function openControls(){showDrawer('Controls','<p class="drawer-note">Current movement controls:</p>'+
  '<div class="keyline"><span>Move</span><span>W A S D</span></div><div class="keyline"><span>Look around</span><span>MOUSE</span></div><div class="keyline"><span>Jump</span><span>SPACE</span></div><div class="keyline"><span>Sprint</span><span>SHIFT</span></div><div class="keyline"><span>Pause / release mouse</span><span>ESC</span></div><div class="keyline"><span>Capture mouse</span><span>CLICK</span></div>'+
  '<p class="drawer-note">The grapple spike is planned as the main weapon and traversal tool. Its controls are not implemented yet.</p>');}
-function openCredits(){showDrawer('Credits','<div class="credit-logo">TALON</div><div class="credit-sub">INDEPENDENT CREATIVE STUDIO</div><div class="credit-rule"></div><p class="drawer-note">The Lost Frontier is an original game by Talon.</p><div class="credit-role">Studio</div><div class="credit-name">Talon</div><div class="credit-role">Game</div><div class="credit-name">The Lost Frontier</div>');}
+function openCredits(){showDrawer('Credits','<div class="credit-logo">TALON</div><div class="credit-rule"></div><p class="drawer-note">The Lost Frontier is an original game by Talon.</p><div class="credit-role">Studio</div><div class="credit-name">Talon</div><div class="credit-role">Game</div><div class="credit-name">The Lost Frontier</div>');}
 $('settings').onclick=openSettings;$('controls').onclick=openControls;$('credits').onclick=openCredits;
 $('drawer-close').onclick=closeDrawer;
 $('play').onclick=beginStory;
