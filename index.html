@@ -398,6 +398,25 @@ function makeHand(side){
 }
 makeHand(-1);makeHand(1);hands.visible=false;camera.add(hands);scene.add(camera);
 
+// The traveler wears a plain coat and carries the satchel mentioned in the opening.
+const travelerBody=new THREE.Group();
+const coatMat=standard(0x384b45),trouserMat=standard(0x343b39),bootMat=standard(0x292824),satchelMat=standard(0x76513a);
+const torso=new THREE.Mesh(new THREE.CapsuleGeometry(.32,.46,4,10),coatMat);
+torso.position.y=.99;torso.scale.set(1,.98,.78);torso.castShadow=true;travelerBody.add(torso);
+const belt=new THREE.Mesh(new THREE.CylinderGeometry(.33,.33,.075,12),satchelMat);
+belt.position.y=.7;travelerBody.add(belt);
+for(const side of [-1,1]){
+ const leg=new THREE.Mesh(new THREE.CapsuleGeometry(.125,.42,4,8),trouserMat);
+ leg.position.set(side*.145,.39,0);leg.castShadow=true;travelerBody.add(leg);
+ const boot=new THREE.Mesh(new THREE.BoxGeometry(.22,.16,.36),bootMat);
+ boot.position.set(side*.145,.105,-.045);boot.castShadow=true;travelerBody.add(boot);
+}
+const satchel=new THREE.Mesh(new THREE.BoxGeometry(.31,.35,.18),satchelMat);
+satchel.position.set(-.34,.64,.12);satchel.rotation.z=-.12;satchel.castShadow=true;travelerBody.add(satchel);
+const satchelFlap=new THREE.Mesh(new THREE.BoxGeometry(.33,.11,.2),standard(0x8b6345));
+satchelFlap.position.set(-.34,.81,.105);satchelFlap.castShadow=true;travelerBody.add(satchelFlap);
+travelerBody.visible=false;scene.add(travelerBody);
+
 const keys={};
 const settings={quality:'high',sensitivity:1,fov:76};
 function applySettings(){
@@ -621,7 +640,7 @@ function updateDayNight(dt){
 function animate(){
  requestAnimationFrame(animate);
  const dt=Math.min(clock.getDelta(),.04),tickTime=clock.elapsedTime;
- ghost.visible=mode==='game';
+ ghost.visible=mode==='game';travelerBody.visible=mode==='game';travelerBody.position.set(player.x,player.y,player.z);travelerBody.rotation.y=yaw;
  if(mode==='menu'||mode==='story'){
   const t=clock.elapsedTime;
   camera.position.set(24+Math.sin(t*.055)*29,39+Math.sin(t*.11)*2.2,72+Math.cos(t*.055)*12);
